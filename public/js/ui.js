@@ -9,12 +9,19 @@ $(document).ready(function() {
     dropdownChannel();
     caclulateReachedTresholds();
     calculateViewsAndEarnings();
+    enableTooltips();
 });
 
 function removeNotifications() {
     setTimeout(function(){
             $('.notification').remove();
     }, 5000);
+}
+
+function enableTooltips() {
+    $(".info-hover").tooltip();
+    $(".video-link").tooltip()
+        .each((i, el) => $(el).data('tooltip').tip().addClass('test'));
 }
 
 function clearChannels() {
@@ -91,11 +98,14 @@ function popUpVideoForm() {
     });
 
     $(document).on('click', '.video-settings', function(e) {
+        let parent = e.target.parentElement.parentElement,
+            videoData = JSON.parse(parent.dataset.video);
+
         $('#videoSettingsDelete').show();
         let videoRow = e.target.parentElement.parentElement;
         videoDataUpdate(videoRow);
-        $(formButton).attr('value', e.target.value);
-        $(formButton).attr('name', 'update_video_form');
+        $(formButton).attr('value', videoData.id);
+        $(formButton).attr('name', 'videoSettingsUpdate');
         title.textContent = 'Update Video';
         formButton.textContent = 'Update Video';
         [].forEach.call(elements, function(el) {
@@ -198,7 +208,8 @@ function calculateViewsAndEarnings() {
                 monthlyViews = videoData.children[2].firstElementChild,
                 monthlyViewsTreshold = videoData.children[2].lastElementChild;
 
-            currency = videoData.getAttribute('data-currency');
+            videoData = JSON.parse(videoData.dataset.video);
+            currency = videoData.factor_currency;
             currency = currencySign(currency);
 
             countViews += parseFloat(trackedViews.innerText);
@@ -239,7 +250,7 @@ function videoDataUpdate(button) {
 
     $(treshold).attr('value', data.treshold);
     $(note).attr('value', data.note);
-    $(hiddenId).attr('value', data.id);
+    $(hiddenId).attr('value', data.channel_id);
 }
 
 function clearVideoData() {

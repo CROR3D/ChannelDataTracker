@@ -33,14 +33,14 @@ class ChannelController extends Controller
                 break;
 
             case $request->has('addChannel'):
-            case $request->has('add_search_form'):
+            case $request->has('addSearchedChannel'):
 
-                $id = ($request->id) ? $request->id : $request->add_search_form;
+                $id = ($request->id) ? $request->id : $request->addSearchedChannel;
                 $data = $this->addChannel($id);
                 $this->storeChannel($data->items[0]);
                 break;
 
-            case $request->has('update_channel_form'):
+            case $request->has('channelSettingsUpdate'):
 
                 $channelId = $request->channelSettingsChannelId;
                 $channelData = [
@@ -51,14 +51,21 @@ class ChannelController extends Controller
                 ];
                 $this->updateChannel($channelId, $channelData);
                 break;
+            case $request->has('channelSettingsDelete'):
 
+                $channelId = $request->channelSettingsChannelId;
+                $this->deleteChannel($channelId);
+                break;
             case $request->has('videoSettingsAdd'):
 
                 $videoId = $request->videoSettingsAdd;
                 $channelId = $request->videoSettingsChannelId;
                 $videoExists = Video::where('id', $videoId)->exists();
 
-                if($videoExists) return redirect()->route('index');
+                if($videoExists) {
+                    session()->flash('error', 'Video is already tracked!');
+                    return redirect()->route('index');
+                }
 
                 $validatedData = $request->validate([
                     'videoSettingsTitle' => 'string|nullable',
@@ -69,14 +76,19 @@ class ChannelController extends Controller
                     ],
                     'videoSettingsTreshold' => 'numeric',
                     'videoSettingsNote' => 'string|nullable',
-                    'videoSettingsAddOrUpdate' => 'required',
+                    'videoSettingsAdd' => 'required',
                 ]);
 
                 $video = $this->addVideo($videoId);
                 $videoChannelId = $video->items[0]->snippet->channelId;
 
-                if($videoChannelId !== $channelId) {
+                if($video === null) {
                     session()->flash('error', 'Video not found!');
+                    return redirect()->route('index');
+                }
+
+                if($videoChannelId !== $channelId) {
+                    session()->flash('error', 'Video doesn\'t belong to the channel you want to add it to!');
                     return redirect()->route('index');
                 }
 
@@ -91,7 +103,7 @@ class ChannelController extends Controller
                 $this->storeVideo($video->items[0], $videoData);
                 break;
 
-            case $request->has('update_video_form'):
+            case $request->has('videoSettingsUpdate'):
 
                 $videoData = array(
                     'name' => $request->videoSettingsTitle,
@@ -101,14 +113,9 @@ class ChannelController extends Controller
                     'note' => $request->videoSettingsNote
                 );
 
-                $this->updateVideo($request->video_id_form, $videoData);
+                $this->updateTrackedVideo($request->videoSettingsUpdate, $videoData);
                 break;
-            case $request->has('channelSettingsDelete'):
-
-                $channelId = $request->channelSettingsChannelId;
-                $this->deleteChannel($channelId);
-                break;
-            case $request->has('video_settings_delete'):
+            case $request->has('videoSettingsDelete'):
 
                 $videoId = $request->videoSettingsChannelId;
                 $this->deleteVideo($videoId);
@@ -212,7 +219,7 @@ class ChannelController extends Controller
             'likes' => $data->statistics->likeCount,
             'dislikes' => $data->statistics->dislikeCount,
             'comments' => $data->statistics->commentCount,
-            'note' => $definedData['note'],
+            'note' => $definedData['videoSettingsNote'],
             'privacy' => $data->status->privacyStatus
         );
 
@@ -220,7 +227,7 @@ class ChannelController extends Controller
         $new_video->saveVideo($video);
     }
 
-    private function updateVideo($id, $videoData)
+    private function updateTrackedVideo($id, $videoData)
     {
         $video = Video::find($id);
         $video->updateVideo($videoData);

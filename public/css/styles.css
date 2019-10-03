@@ -207,8 +207,26 @@ html { overflow-y: scroll; }
     color: #aaa;
 }
 
+.last-row {
+    position: relative;
+}
+
+.tooltip-custom,
+.tooltip-custom-content {
+    color: red !important;
+}
+
 .text-custom-success {
     color: #78cc78;
+}
+
+.btn-custom-success {
+    color: #78cc78;
+    border-color: #78cc78 !important;
+}
+
+.btn-custom-success:hover {
+    border-color: #6c757d !important;
 }
 
 .btn-custom-secondary {
