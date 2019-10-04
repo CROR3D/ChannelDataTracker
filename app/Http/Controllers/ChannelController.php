@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use Config;
+use Carbon\Carbon;
 use App\Channel;
 use App\Video;
 use App\History;
+use App\DailyTracker;
 use Illuminate\Http\Request;
 use GuzzleHttp\Client;
 use Illuminate\Validation\Rule;
@@ -167,16 +169,39 @@ class ChannelController extends Controller
 
     private function storeChannel($data)
     {
-        $channel = array(
-            'id' => $data->id,
+        $channelId = $data->id;
+        $today = Carbon::now();
+        $day = $today->day;
+
+        $channel = [
+            'id' => $channelId,
             'name' => $data->snippet->title,
             'subs' => $data->statistics->subscriberCount,
             'videos' => $data->statistics->videoCount,
             'views' => $data->statistics->viewCount
-        );
+        ];
 
-        $new_channel = new Channel;
-        $new_channel->saveChannel($channel);
+        $dailyData = [
+            'channel_id' => $channelId
+        ];
+
+        $dailyData['day' . $day] = [
+            'subs' => $channel['subs'],
+            'videos' => $channel['videos'],
+            'views' => $channel['views']
+        ];
+
+        $dailyData['day3'] = [
+            'subs' => $channel['subs'] + 200,
+            'videos' => $channel['videos'] - 15,
+            'views' => $channel['views'] - 3500
+        ];
+
+        $newChannel = new Channel;
+        $newChannel->saveChannel($channel);
+
+        $newDailyTracker = new DailyTracker;
+        $newDailyTracker->saveDailyTracker($dailyData);
     }
 
     private function updateChannel($id, $channelData)
@@ -223,8 +248,8 @@ class ChannelController extends Controller
             'privacy' => $data->status->privacyStatus
         );
 
-        $new_video = new Video;
-        $new_video->saveVideo($video);
+        $newVideo = new Video;
+        $newVideo->saveVideo($video);
     }
 
     private function updateTrackedVideo($id, $videoData)
@@ -240,6 +265,7 @@ class ChannelController extends Controller
 
         foreach ($channels as $channel) {
             $channelId = $channel->id;
+            $dailyData = $this->getDailyData($channelId);
             $channelData = array(
                 $channelId => [
                     'id' => $channelId,
@@ -248,6 +274,12 @@ class ChannelController extends Controller
                     'subs' => $channel->subs,
                     'videos' => $channel->videos,
                     'views' => $channel->views,
+                    'daily_subs' => $dailyData['subs'],
+                    'daily_videos' => $dailyData['videos'],
+                    'daily_views' => $dailyData['views'],
+                    'average_subs' => 16,
+                    'average_videos' => 7,
+                    'average_views' => 17,
                     'channel_videos' => [],
                 ]
             );
@@ -280,10 +312,27 @@ class ChannelController extends Controller
         $video->delete();
     }
 
-    // FUNCTION FOR TASK SCHEDULING
+    private function getDailyData($id)
+    {
+        $today = Carbon::now();
+        $day = $today->day;
+        $dailyTracking = DailyTracker::where('channel_id', $id)->first();
+        $todayData = $dailyTracking->{'day' . $day};
+        $yesterdayData = $dailyTracking->{'day' . ($day - 1)};
+
+        return [
+            'subs' => $todayData['subs'] - $yesterdayData['subs'],
+            'videos' => $todayData['videos'] - $yesterdayData['videos'],
+            'views' => $todayData['views'] - $yesterdayData['views']
+        ];
+    }
+
+    // FUNCTION FOR TASK SCHEDULING (SAVING MONTH HISTORY 1st DAY OF THE MONTH AT 00:00)
     public function saveMonthHistory($videoId, $monthHistory)
     {
         $history = History::where('video_id', $videoId)->first();
         $history->update($monthHistory);
     }
+
+    // FUNCTION FOR TASK SCHEDULING (SAVING DAILY DATA EVERY DAY AT 00:00)
 }

@@ -211,8 +211,7 @@ html { overflow-y: scroll; }
     position: relative;
 }
 
-.tooltip-custom,
-.tooltip-custom-content {
+.tooltip-custom {
     color: red !important;
 }
 

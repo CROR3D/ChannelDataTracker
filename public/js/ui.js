@@ -19,9 +19,8 @@ function removeNotifications() {
 }
 
 function enableTooltips() {
-    $(".info-hover").tooltip();
-    $(".video-link").tooltip()
-        .each((i, el) => $(el).data('tooltip').tip().addClass('test'));
+    $('.video-link').tooltip();
+    $('.info-hover').tooltip();
 }
 
 function clearChannels() {

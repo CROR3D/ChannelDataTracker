@@ -26,6 +26,21 @@ class History extends Model
         'december',
     ];
 
+    protected $casts = [
+        'january' => 'array',
+        'february' => 'array',
+        'march' => 'array',
+        'april' => 'array', 
+        'may' => 'array',
+        'june' => 'array',
+        'july' => 'array',
+        'august' => 'array',
+        'september' => 'array',
+        'october' => 'array',
+        'november' => 'array',
+        'december' => 'array'
+    ];
+
     public function saveHistory($history)
 	{
 		return $this->create($history);
