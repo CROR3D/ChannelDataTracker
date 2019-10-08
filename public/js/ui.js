@@ -123,6 +123,7 @@ function closePopUp() {
         });
         $(parent).hide();
         clearVideoData();
+        // ADD DATA AGAIN AFTER CLEARING
     });
 }
 
@@ -279,6 +280,53 @@ function currencySign(currency) {
 
 function currencyConverter(current, to) {
 
+}
+
+function validateVideoForm() {
+    let videoForm = document.getElementById('videoSettingsForm'),
+        videoTitle = document.forms['videoSettingsForm']['videoSettingsTitle'].value,
+        videoSettingsEarningFactor = document.forms['videoSettingsForm']['videoSettingsEarningFactor'].value,
+        videoSettingsFactorCurrency = document.forms['videoSettingsForm']['videoSettingsFactorCurrency'].value,
+        videoSettingsTreshold = document.forms['videoSettingsForm']['videoSettingsTreshold'].value;
+
+    let isValid = true;
+
+    if (videoTitle === "" || typeof videoTitle !== 'string') {
+        let titleError = document.getElementById('videoTitleError');
+        titleError.textContent = '- Name is required!';
+        setTimeout(function(){
+            titleError.textContent = '';
+        }, 5000);
+        isValid = false;
+    }
+
+    if (videoSettingsEarningFactor < 0 || typeof videoSettingsEarningFactor !== 'number') {
+        let earningFactorError = document.getElementById('earningFactorError');
+        earningFactorError.textContent = '- Earning factor is not valid!';
+        setTimeout(function(){
+            earningFactorError.textContent = '';
+        }, 5000);
+        isValid = false;
+    }
+
+    if (['HRK', 'USD', 'EUR'].includes(videoSettingsFactorCurrency)) {
+        earningFactorError.textContent = '- Factor currency is not valid!';
+        setTimeout(function(){
+            earningFactorError.textContent = '';
+        }, 5000);
+        isValid = false;
+    }
+
+    if (videoSettingsTreshold < 0 || typeof videoSettingsTreshold !== 'number') {
+        let videoTresholdError = document.getElementById('videoTresholdError');
+        videoTresholdError.textContent = '- Treshold is not defined properly!';
+        setTimeout(function(){
+            videoTresholdError.textContent = '';
+        }, 5000);
+        isValid = false;
+    }
+
+    return isValid;
 }
 
 function displayHistory(history) {

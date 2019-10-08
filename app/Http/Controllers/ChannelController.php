@@ -69,18 +69,6 @@ class ChannelController extends Controller
                     return redirect()->route('index');
                 }
 
-                $validatedData = $request->validate([
-                    'videoSettingsTitle' => 'string|nullable',
-                    'videoSettingsEarningFactor' => 'required|numeric',
-                    'videoSettingsFactorCurrency' => [
-                        'required',
-                        Rule::in(['HRK', 'USD', 'EUR']),
-                    ],
-                    'videoSettingsTreshold' => 'numeric',
-                    'videoSettingsNote' => 'string|nullable',
-                    'videoSettingsAdd' => 'required',
-                ]);
-
                 $video = $this->addVideo($videoId);
                 $videoChannelId = $video->items[0]->snippet->channelId;
 

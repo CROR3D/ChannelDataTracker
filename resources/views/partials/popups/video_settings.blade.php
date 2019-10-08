@@ -5,14 +5,14 @@
         </div>
         <h3 id="popup-title" class="text-center my-2"></h3>
         <div class="p-3">
-            <form id="video-settings-form" class="form mb-4 p-0" method="post" action="{{ route('channels') }}">
+            <form id="videoSettingsForm" class="form mb-4 p-0" name="videoSettingsForm" method="post" onsubmit="return validateVideoForm()" action="{{ route('channels') }}">
                 <div class="form-group text-left">
-                    <label>Change title</label>
+                    <label>Change title <span id="videoTitleError" class="text-danger"></span></label>
                     <input id="videoSettingsTitle" class="form-control mb-3" name="videoSettingsTitle" type="text" value="">
-                    <label>Earning factor per 1000 views</label>
+                    <label>Earning factor per 1000 views <span id="earningFactorError" class="text-danger"></span></label>
                     <div class="row">
                         <div class="col-md-8">
-                            <input id="videoSettingsEarningFactor" class="form-control mb-3" name="videoSettingsEarningFactor" type="number" step="0.01" min="0" value="">
+                            <input id="videoSettingsEarningFactor" class="form-control mb-3" name="videoSettingsEarningFactor" type="text" value="">
                         </div>
                         <div class="col-md-4">
                             <select id="videoSettingsFactorCurrency" class="form-control" name="videoSettingsFactorCurrency">
@@ -22,8 +22,8 @@
                             </select>
                         </div>
                     </div>
-                    <label>Get notified when video exceeds view limit</label>
-                    <input id="videoSettingsTreshold" class="form-control mb-3" name="videoSettingsTreshold" type="number" min="0" value="">
+                    <label>Get notified when video exceeds view limit <span id="videoTresholdError" class="text-danger"></span></label>
+                    <input id="videoSettingsTreshold" class="form-control mb-3" name="videoSettingsTreshold" type="text" value="">
                     <label>Message related to this video</label>
                     <input id="videoSettingsNote" class="form-control mb-5" name="videoSettingsNote" type="text" value="">
                     <div class="row">
