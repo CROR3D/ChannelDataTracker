@@ -259,15 +259,21 @@ class ChannelController extends Controller
                     'id' => $channelId,
                     'name' => $channel->name,
                     'tracking' => $channel->tracking,
-                    'subs' => $channel->subs,
-                    'videos' => $channel->videos,
-                    'views' => $channel->views,
-                    'daily_subs' => $dailyData['subs'],
-                    'daily_videos' => $dailyData['videos'],
-                    'daily_views' => $dailyData['views'],
-                    'average_subs' => 16,
-                    'average_videos' => 7,
-                    'average_views' => 17,
+                    'total' => [
+                        'subs' => $channel->subs,
+                        'videos' => $channel->videos,
+                        'views' => $channel->views,
+                    ],
+                    'daily' => [
+                        'subs' => $dailyData['subs'],
+                        'videos' => $dailyData['videos'],
+                        'views' => $dailyData['views'],
+                    ],
+                    'average' => [
+                        'subs' => 16,
+                        'videos' => 7,
+                        'views' => 17,
+                    ],
                     'channel_videos' => [],
                 ]
             );
@@ -277,6 +283,11 @@ class ChannelController extends Controller
             foreach ($videos as $video) {
                 $channelVideo = [];
                 array_push($channelVideo, $video);
+                $videoEarningsInDollars = [
+                    'basedOnViews' => strval(number_format(($video->views / 1000) * $video->earning_factor, 2)) . $video->factor_currency,
+                    'basedOnMonthlyViews' => strval(number_format(($video->monthly_views / 1000) * $video->earning_factor, 2)) . $video->factor_currency,
+                ];
+                array_push($channelVideo, $videoEarningsInDollars);
                 $history = History::where('video_id', $video->id)->first();
                 array_push($channelVideo, $history);
                 array_push($channelData[$channelId]['channel_videos'], $channelVideo);

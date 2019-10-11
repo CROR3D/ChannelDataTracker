@@ -77,10 +77,11 @@
                 <div id="list-channels" class="container mt-2 p-0">
                     @if(count($data) > 0)
                         @foreach($data as $channel)
+                            <?php $tracking = $channel['tracking'] ?>
                             <div class="row channel text-center py-3">
                                 <div class="col hvr-wobble-horizontal channel-title">{{ $channel['name'] }}</div>
-                                <div class="col">{{ $channel['daily_subs'] }}</div>
-                                <div class="col">{{ $channel['views'] }}</div>
+                                <div class="col">{{ $channel[$tracking]['subs'] }}</div>
+                                <div class="col">{{ $channel[$tracking]['views'] }}</div>
                                 <div class="col">
                                     <span>0</span>
                                     /
@@ -126,11 +127,11 @@
                                                 <div class="col"><a class="video-link" href="https://www.youtube.com/watch?v={{ $video[0]->id }}" target="_blank" data-toggle="tooltip" data-placement="bottom" title="{{ $video[0]->name }}">{{ str_limit($video[0]->name, $limit = 18, $end = ' ...') }}</a></div>
                                                 <div class="col">
                                                     <span>{{ $video[0]->views }} </span>
-                                                    <span class="text-success earning-border">{{ number_format(($video[0]->views / 1000) * $video[0]->earning_factor, 2) }}</span>
+                                                    <span class="text-success earning-border">{{ $video[1]['basedOnViews'] }}</span>
                                                 </div>
                                                 <div class="col">
                                                     <span>{{ $video[0]->monthly_views }} </span>
-                                                    <span class="text-success earning-border">{{ number_format(($video[0]->monthly_views / 1000) * $video[0]->earning_factor, 2) }}</span>
+                                                    <span class="text-success earning-border">{{ $video[1]['basedOnMonthlyViews'] }}</span>
                                                 </div>
                                                 <div class="col">
                                                     <span class="text-danger">{{ $video[0]->views - $video[0]->treshold_views }}</span>
@@ -138,7 +139,7 @@
                                                     <span>{{ $video[0]->treshold }}</span>
                                                 </div>
                                                 <div class="col last-row">
-                                                    <button class="btn-custom btn-custom-secondary info-hover {{ ($video[0]->note !== null) ? 'btn-custom-success' : '' }}" data-toggle="tooltip" data-history="{{ $video[1] }}" data-placement="bottom" title="{{ $video[0]->note }}">
+                                                    <button class="btn-custom btn-custom-secondary info-hover {{ ($video[0]->note !== null) ? 'btn-custom-success' : '' }}" data-toggle="tooltip" data-history="{{ $video[2] }}" data-placement="bottom" title="{{ $video[0]->note }}">
                                                         Info
                                                     </button>
                                                     <button class="btn-custom btn-custom-secondary video-settings">Settings</button>

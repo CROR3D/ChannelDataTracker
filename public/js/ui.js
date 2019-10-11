@@ -8,7 +8,6 @@ $(document).ready(function() {
     changeResultCount();
     dropdownChannel();
     caclulateReachedTresholds();
-    calculateViewsAndEarnings();
     enableTooltips();
 });
 
@@ -177,57 +176,6 @@ function caclulateReachedTresholds() {
     }
 }
 
-function calculateViewsAndEarnings() {
-    let channelsVideoData = document.getElementsByClassName('video-data');
-
-    for(let i = 0; i < channelsVideoData.length; i++) {
-        let video = channelsVideoData[i].children[1],
-            totalTrackedViews = video.children[1].firstElementChild,
-            totalTrackedViewsTreshold = video.children[1].lastElementChild,
-            totalMonthlyViews = video.children[2].firstElementChild,
-            totalMonthlyViewsTreshold = video.children[2].lastElementChild;
-
-        let countViews = 0,
-            countMonthlyViews = 0,
-            countViewsTreshold = 0,
-            countMonthlyViewsTreshold = 0,
-            countRowsInChannel = channelsVideoData[i].children.length,
-            x = 0
-            currency = 'HRK';
-
-        if(countRowsInChannel > 2) {
-            x = 2;
-        } else {
-            x = 1;
-        }
-
-        for(x; x < countRowsInChannel; x++) {
-            let videoData = channelsVideoData[i].children[x],
-                trackedViews = videoData.children[1].firstElementChild,
-                trackedViewsTreshold = videoData.children[1].lastElementChild,
-                monthlyViews = videoData.children[2].firstElementChild,
-                monthlyViewsTreshold = videoData.children[2].lastElementChild;
-
-            videoData = JSON.parse(videoData.dataset.video);
-            currency = videoData.factor_currency;
-            currency = currencySign(currency);
-
-            countViews += parseFloat(trackedViews.innerText);
-            countMonthlyViews += parseFloat(monthlyViews.innerText);
-            countViewsTreshold += parseFloat(trackedViewsTreshold.innerText);
-            countMonthlyViewsTreshold += parseFloat(monthlyViewsTreshold.innerText);
-
-            trackedViewsTreshold.innerText += currency;
-            monthlyViewsTreshold.innerText += currency;
-        }
-
-        totalTrackedViews.innerText = countViews;
-        totalMonthlyViews.innerText = countMonthlyViews;
-        totalTrackedViewsTreshold.innerText = countViewsTreshold + currency;
-        totalMonthlyViewsTreshold.innerText = countMonthlyViewsTreshold + currency;
-    }
-}
-
 function channelDataUpdate(button) {
     let data = JSON.parse(button.dataset.channel);
 }
@@ -267,27 +215,12 @@ function clearVideoData() {
     $(hiddenId).attr('value', '');
 }
 
-function currencySign(currency) {
-    switch (currency) {
-        case 'USD':
-            return '$';
-        case 'EUR':
-            return '€';
-        default:
-            return 'kn';
-    }
-}
-
-function currencyConverter(current, to) {
-
-}
-
 function validateVideoForm() {
     let videoForm = document.getElementById('videoSettingsForm'),
         videoTitle = document.forms['videoSettingsForm']['videoSettingsTitle'].value,
-        videoSettingsEarningFactor = document.forms['videoSettingsForm']['videoSettingsEarningFactor'].value,
+        videoSettingsEarningFactor = parseFloat(document.forms['videoSettingsForm']['videoSettingsEarningFactor'].value),
         videoSettingsFactorCurrency = document.forms['videoSettingsForm']['videoSettingsFactorCurrency'].value,
-        videoSettingsTreshold = document.forms['videoSettingsForm']['videoSettingsTreshold'].value;
+        videoSettingsTreshold = parseInt(document.forms['videoSettingsForm']['videoSettingsTreshold'].value);
 
     let isValid = true;
 
@@ -309,7 +242,7 @@ function validateVideoForm() {
         isValid = false;
     }
 
-    if (['HRK', 'USD', 'EUR'].includes(videoSettingsFactorCurrency)) {
+    if (!['HRK', 'USD', 'EUR'].includes(videoSettingsFactorCurrency)) {
         earningFactorError.textContent = '- Factor currency is not valid!';
         setTimeout(function(){
             earningFactorError.textContent = '';
