@@ -111,12 +111,12 @@
                                     <div class="row video-header text-center p-3 monthly-highlight">
                                         <div class="col"></div>
                                         <div class="col">
-                                            <span></span>
-                                            <span class="text-success earning-border"></span>
+                                            <span>{{ $channel['channel_calculation']['total']['caluculatedViews']['views'] }}</span>
+                                            <span class="text-success earning-border">{{ $channel['channel_calculation']['total']['caluculatedEarnings']['views'] }}</span>
                                         </div>
                                         <div class="col">
-                                            <span></span>
-                                            <span class="text-success earning-border"></span>
+                                            <span>{{ $channel['channel_calculation']['total']['caluculatedViews']['monthlyViews'] }}</span>
+                                            <span class="text-success earning-border">{{ $channel['channel_calculation']['total']['caluculatedEarnings']['monthlyViews'] }}</span>
                                         </div>
                                         <div class="col"></div>
                                         <div class="col"></div>

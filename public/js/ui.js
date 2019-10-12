@@ -9,6 +9,7 @@ $(document).ready(function() {
     dropdownChannel();
     caclulateReachedTresholds();
     enableTooltips();
+    document.getElementById('videoSettingsAddOrUpdate').addEventListener('click', validateVideoForm);
 });
 
 function removeNotifications() {
@@ -73,6 +74,7 @@ function popUpVideoForm() {
     const elements = document.querySelectorAll('.channel-title'),
           title = document.getElementById('popup-title'),
           formButton = document.getElementById('videoSettingsAddOrUpdate'),
+          formButtonDelete = document.getElementById('videoSettingsDelete'),
           hiddenId = document.getElementById('videoSettingsChannelId');
 
     $(document).on('click', '.add-video', function(e) {
@@ -104,6 +106,7 @@ function popUpVideoForm() {
         videoDataUpdate(videoRow);
         $(formButton).attr('value', videoData.id);
         $(formButton).attr('name', 'videoSettingsUpdate');
+        $(formButtonDelete).attr('value', videoData.id);
         title.textContent = 'Update Video';
         formButton.textContent = 'Update Video';
         [].forEach.call(elements, function(el) {
@@ -122,7 +125,6 @@ function closePopUp() {
         });
         $(parent).hide();
         clearVideoData();
-        // ADD DATA AGAIN AFTER CLEARING
     });
 }
 
@@ -189,16 +191,16 @@ function videoDataUpdate(button) {
         note = document.getElementById('videoSettingsNote'),
         hiddenId = document.getElementById('videoSettingsChannelId');
 
-    $(title).attr('value', data.name);
-    $(earningFactor).attr('value', data.earning_factor);
+    title.value = data.name;
+    earningFactor.value = data.earning_factor;
 
     for(let i = 0; i < factorCurrency.length; i++) {
         if(factorCurrency.options[i].text === data.factor_currency) factorCurrency.options[i].selected = true;
     }
 
-    $(treshold).attr('value', data.treshold);
-    $(note).attr('value', data.note);
-    $(hiddenId).attr('value', data.channel_id);
+    treshold.value = data.treshold;
+    note.value = data.note;
+    hiddenId.value = data.channel_id;
 }
 
 function clearVideoData() {
@@ -208,14 +210,14 @@ function clearVideoData() {
         note = document.getElementById('videoSettingsNote'),
         hiddenId = document.getElementById('videoSettingsChannelId');
 
-    $(title).attr('value', '');
-    $(earningFactor).attr('value', '');
-    $(treshold).attr('value', '');
-    $(note).attr('value', '');
-    $(hiddenId).attr('value', '');
+    title.value = '';
+    earningFactor.value = '';
+    treshold.value = '';
+    note.value = '';
+    hiddenId.value = '';
 }
 
-function validateVideoForm() {
+function validateVideoForm(e) {
     let videoForm = document.getElementById('videoSettingsForm'),
         videoTitle = document.forms['videoSettingsForm']['videoSettingsTitle'].value,
         videoSettingsEarningFactor = parseFloat(document.forms['videoSettingsForm']['videoSettingsEarningFactor'].value),
@@ -258,6 +260,8 @@ function validateVideoForm() {
         }, 5000);
         isValid = false;
     }
+
+    if(!isValid) e.preventDefault();
 
     return isValid;
 }

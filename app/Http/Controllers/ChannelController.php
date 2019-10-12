@@ -107,7 +107,7 @@ class ChannelController extends Controller
                 break;
             case $request->has('videoSettingsDelete'):
 
-                $videoId = $request->videoSettingsChannelId;
+                $videoId = $request->videoSettingsDelete;
                 $this->deleteVideo($videoId);
                 break;
         }
@@ -224,6 +224,7 @@ class ChannelController extends Controller
             'channel_id' => $data->snippet->channelId,
             'name' => ($definedData['title'] === null) ? $data->snippet->title : $definedData['title'],
             'views' => $data->statistics->viewCount,
+            'tracked_zero' => $data->statistics->viewCount,
             'earning_factor' => $definedData['videoSettingsEarningFactor'],
             'factor_currency' => $definedData['videoSettingsFactorCurrency'],
             'monthly_views' => 0,
@@ -276,10 +277,43 @@ class ChannelController extends Controller
                         'views' => 17,
                     ],
                     'channel_videos' => [],
+                    'channel_calculation' => [
+                        'total' => [
+                            'caluculatedViews' => [
+                                'views' => 0,
+                                'monthlyViews' => 0
+                            ],
+                            'caluculatedEarnings' => [
+                                'views' => 0,
+                                'monthlyViews' => 0
+                            ]
+                        ],
+                        'daily' => [
+                            'caluculatedViews' => [
+                                'views' => 0,
+                                'monthlyViews' => 0
+                            ],
+                            'caluculatedEarnings' => [
+                                'views' => 0,
+                                'monthlyViews' => 0
+                            ]
+                        ],
+                        'average' => [
+                            'caluculatedViews' => [
+                                'views' => 0,
+                                'monthlyViews' => 0
+                            ],
+                            'caluculatedEarnings' => [
+                                'views' => 0,
+                                'monthlyViews' => 0
+                            ]
+                        ]
+                    ]
                 ]
             );
 
             $videos = Video::where('channel_id', $channelId)->get();
+            $videoCount = count($videos);
 
             foreach ($videos as $video) {
                 $channelVideo = [];
@@ -287,15 +321,18 @@ class ChannelController extends Controller
 
                 $currencyExchange = $this->searchCurrencyExchangeValues();
 
-                $earningsOnViewsInDollars = ($video->views / 1000) * $video->earning_factor;
+                $earningsOnViewsInDollars = (($video->views - $video->tracked_zero) / 1000) * $video->earning_factor;
                 $earningsOnMonthlyViewsInDollars = ($video->monthly_views / 1000) * $video->earning_factor;
 
                 $basedOnViews = $this->exchangeCurrency($video->factor_currency, $currencyExchange, $earningsOnViewsInDollars);
                 $basedOnMonthlyViews = $this->exchangeCurrency($video->factor_currency, $currencyExchange, $earningsOnMonthlyViewsInDollars);
 
+                $basedOnViewsWithCurrency = $this->addCurrency($basedOnViews, $video->factor_currency);
+                $basedOnMonthlyViewsWithCurrency = $this->addCurrency($basedOnMonthlyViews, $video->factor_currency);
+
                 $videoEarningsInDollars = [
-                    'basedOnViews' => $basedOnViews,
-                    'basedOnMonthlyViews' => $basedOnMonthlyViews,
+                    'basedOnViews' => $basedOnViewsWithCurrency,
+                    'basedOnMonthlyViews' => $basedOnMonthlyViewsWithCurrency,
                 ];
 
                 array_push($channelVideo, $videoEarningsInDollars);
@@ -304,11 +341,18 @@ class ChannelController extends Controller
                 array_push($channelVideo, $history);
 
                 array_push($channelData[$channelId]['channel_videos'], $channelVideo);
+
+                if($videoCount > 1) {
+                    $channelData[$channelId]['channel_calculation']['total']['caluculatedViews']['views'] = $channelData[$channelId]['channel_calculation']['total']['caluculatedViews']['views'] + $video->views;
+                    $channelData[$channelId]['channel_calculation']['total']['caluculatedViews']['monthlyViews'] = $channelData[$channelId]['channel_calculation']['total']['caluculatedViews']['monthlyViews'] + $video->monthly_views;
+                    $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['views'] = $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['views'] + $basedOnViews;
+                    $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['monthlyViews'] = $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['monthlyViews'] + $basedOnMonthlyViews;
+                }
             }
 
             $data = array_merge($data, $channelData);
         }
-
+        
         return $data;
     }
 
@@ -335,14 +379,29 @@ class ChannelController extends Controller
         switch($currency) {
             case 'HRK':
                 $currentState = $currencyExchange->rates->HRK;
-                return strval(number_format($value * $currentState, 2) . 'kn');
+                return number_format($value * $currentState, 2);
                 break;
             case 'EUR':
                 $currentState = $currencyExchange->rates->EUR;
-                return strval(number_format($value * $currentState, 2) . '€');
+                return number_format($value * $currentState, 2);
                 break;
             default:
-                return strval(number_format($value, 2) . '$');
+                return number_format($value, 2);
+                break;
+        }
+    }
+
+    private function addCurrency($value, $currency)
+    {
+        switch($currency) {
+            case 'HRK':
+                return $value . 'kn';
+                break;
+            case 'EUR':
+                return $value . '€';
+                break;
+            default:
+                return $value . '$';
                 break;
         }
     }

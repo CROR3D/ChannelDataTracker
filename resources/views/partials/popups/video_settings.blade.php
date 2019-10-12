@@ -5,7 +5,7 @@
         </div>
         <h3 id="popup-title" class="text-center my-2"></h3>
         <div class="p-3">
-            <form id="videoSettingsForm" class="form mb-4 p-0" name="videoSettingsForm" method="post" onsubmit="return validateVideoForm()" action="{{ route('channels') }}">
+            <form id="videoSettingsForm" class="form mb-4 p-0" name="videoSettingsForm" method="post" action="{{ route('channels') }}">
                 <div class="form-group text-left">
                     <label>Change title <span id="videoTitleError" class="text-danger"></span></label>
                     <input id="videoSettingsTitle" class="form-control mb-3" name="videoSettingsTitle" type="text" value="">

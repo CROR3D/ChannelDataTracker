@@ -13,6 +13,7 @@ class Video extends Model
         'channel_id',
         'name',
         'views',
+        'tracked_zero',
         'earning_factor',
         'factor_currency',
         'monthly_views',

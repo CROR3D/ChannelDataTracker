@@ -18,6 +18,7 @@ class CreateVideosTable extends Migration
             $table->string('channel_id');
             $table->string('name');
             $table->integer('views');
+            $table->integer('tracked_zero');
             $table->float('earning_factor', 8, 2);
             $table->string('factor_currency');
             $table->integer('monthly_views')->nullable();
