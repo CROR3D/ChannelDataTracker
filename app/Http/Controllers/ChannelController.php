@@ -254,6 +254,7 @@ class ChannelController extends Controller
         foreach ($channels as $channel) {
             $channelId = $channel->id;
             $dailyData = $this->getDailyData($channelId);
+
             $channelData = array(
                 $channelId => [
                     'id' => $channelId,
@@ -283,13 +284,25 @@ class ChannelController extends Controller
             foreach ($videos as $video) {
                 $channelVideo = [];
                 array_push($channelVideo, $video);
+
+                $currencyExchange = $this->searchCurrencyExchangeValues();
+
+                $earningsOnViewsInDollars = ($video->views / 1000) * $video->earning_factor;
+                $earningsOnMonthlyViewsInDollars = ($video->monthly_views / 1000) * $video->earning_factor;
+
+                $basedOnViews = $this->exchangeCurrency($video->factor_currency, $currencyExchange, $earningsOnViewsInDollars);
+                $basedOnMonthlyViews = $this->exchangeCurrency($video->factor_currency, $currencyExchange, $earningsOnMonthlyViewsInDollars);
+
                 $videoEarningsInDollars = [
-                    'basedOnViews' => strval(number_format(($video->views / 1000) * $video->earning_factor, 2)) . $video->factor_currency,
-                    'basedOnMonthlyViews' => strval(number_format(($video->monthly_views / 1000) * $video->earning_factor, 2)) . $video->factor_currency,
+                    'basedOnViews' => $basedOnViews,
+                    'basedOnMonthlyViews' => $basedOnMonthlyViews,
                 ];
+
                 array_push($channelVideo, $videoEarningsInDollars);
+
                 $history = History::where('video_id', $video->id)->first();
                 array_push($channelVideo, $history);
+
                 array_push($channelData[$channelId]['channel_videos'], $channelVideo);
             }
 
@@ -297,6 +310,41 @@ class ChannelController extends Controller
         }
 
         return $data;
+    }
+
+    private function searchCurrencyExchangeValues()
+    {
+        $client = new Client();
+        $response = $client->request('GET',
+            'https://api.exchangeratesapi.io/latest',
+            [
+                'headers' => [
+                    'Accept' => 'application/json','Content-type' => 'application/json'
+                ],
+                'query' => [
+                    'base' => 'USD',
+                    'symbols' => 'EUR,HRK'
+                ],
+            ])->getBody();
+
+        return json_decode($response);
+    }
+
+    private function exchangeCurrency($currency, $currencyExchange, $value)
+    {
+        switch($currency) {
+            case 'HRK':
+                $currentState = $currencyExchange->rates->HRK;
+                return strval(number_format($value * $currentState, 2) . 'kn');
+                break;
+            case 'EUR':
+                $currentState = $currencyExchange->rates->EUR;
+                return strval(number_format($value * $currentState, 2) . '€');
+                break;
+            default:
+                return strval(number_format($value, 2) . '$');
+                break;
+        }
     }
 
     private function deleteChannel($id)
