@@ -7,7 +7,7 @@
             <form id="channelAddByIdForm" class="form-inline mb-4 p-0" method="post" action="{{ route('channels') }}">
                 <div class="form-group">
                     <input id="id" class="form-control mr-3" name="id" type="text" placeholder="Type ID">
-                    <button id="addChannel" class="btn btn-secondary btn-md" name="addChannel" type="submit">Add Channel</button>
+                    <button id="addChannel" class="btn-custom btn-custom-secondary" name="addChannel" type="submit">Add Channel</button>
                 </div>
                 <input name="_token" value="{{ csrf_token() }}" type="hidden">
             </form>

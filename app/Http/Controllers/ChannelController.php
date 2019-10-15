@@ -314,8 +314,10 @@ class ChannelController extends Controller
 
             $videos = Video::where('channel_id', $channelId)->get();
             $videoCount = count($videos);
+            $calculationCurrency = null;
 
             foreach ($videos as $video) {
+                if(!$calculationCurrency) $calculationCurrency = $video->factor_currency;
                 $channelVideo = [];
                 array_push($channelVideo, $video);
 
@@ -343,16 +345,28 @@ class ChannelController extends Controller
                 array_push($channelData[$channelId]['channel_videos'], $channelVideo);
 
                 if($videoCount > 1) {
+                    if($calculationCurrency !== $video->factor_currency) {
+                        $basedOnViewsExchanged = $this->exchangeCurrency($calculationCurrency, $currencyExchange, $earningsOnViewsInDollars);
+                        $basedOnMonthlyViewsExchanged = $this->exchangeCurrency($calculationCurrency, $currencyExchange, $earningsOnMonthlyViewsInDollars);
+                        $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['views'] = $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['views'] + $basedOnViewsExchanged;
+                        $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['monthlyViews'] = $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['monthlyViews'] + $basedOnMonthlyViewsExchanged;
+                    } else {
+                        $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['views'] = $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['views'] + $basedOnViews;
+                        $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['monthlyViews'] = $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['monthlyViews'] + $basedOnMonthlyViews;
+                    }
+
                     $channelData[$channelId]['channel_calculation']['total']['caluculatedViews']['views'] = $channelData[$channelId]['channel_calculation']['total']['caluculatedViews']['views'] + $video->views;
                     $channelData[$channelId]['channel_calculation']['total']['caluculatedViews']['monthlyViews'] = $channelData[$channelId]['channel_calculation']['total']['caluculatedViews']['monthlyViews'] + $video->monthly_views;
-                    $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['views'] = $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['views'] + $basedOnViews;
-                    $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['monthlyViews'] = $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['monthlyViews'] + $basedOnMonthlyViews;
+
                 }
             }
 
+            $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['views'] = $this->addCurrency(number_format($channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['views'], 2), $calculationCurrency);
+            $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['monthlyViews'] = $this->addCurrency(number_format($channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['monthlyViews'], 2), $calculationCurrency);
+
             $data = array_merge($data, $channelData);
         }
-        
+
         return $data;
     }
 

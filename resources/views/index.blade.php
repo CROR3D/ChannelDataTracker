@@ -20,8 +20,8 @@
             <div id="search-form-wrapper" class="mb-4">
                 <form id="search-form" class="input-group" method="post" action="{{ route('channels') }}">
                     <input id="search" name="search" type="text" class="form-control" aria-label="Text input with dropdown button">
-                    <div class="input-group-append mr-4">
-                        <button id="results" class="btn btn-outline-secondary dropdown-toggle" name="results" type="button"
+                    <div class="input-group-append mr-4 results">
+                        <button id="results" class="btn-custom btn-custom-secondary dropdown-toggle" name="results" type="button"
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             5 Results
                         </button>
@@ -33,11 +33,11 @@
                         </div>
                     </div>
                     <input id="maxResults" name="maxResults" value="5" type="hidden">
-                    <button id="searchChannel" class="btn btn-success btn-md" name="searchBtn" type="submit">Search</button>
+                    <button id="searchChannel" class="btn-custom btn-custom-secondary" name="searchBtn" type="submit">Search</button>
                     <input name="_token" value="{{ csrf_token() }}" type="hidden">
                 </form>
             </div>
-            <p class="lead mb-3 text-success"><a id="popupSearchId" class="link" href="#">Add channel by ID <span class="plus">+</span></a></p>
+            <p class="lead mb-3"><a id="popupSearchId" class="link" href="#">Add channel by ID <span class="plus">+</span></a></p>
 
             @include('partials.popups.add_channel')
             @include('partials.popups.channel_settings')
@@ -52,7 +52,7 @@
                                 <form method="post" action="{{ route('channels') }}">
                                     <img class="mb-2 channel-img" src="{{ $searchData->items[$i]->snippet->thumbnails->default->url }}" />
                                     <p class="mb-2">{{ $searchData->items[$i]->snippet->title }}</p>
-                                    <button class="btn btn-sm btn-secondary search-channel" type="submit" name="addSearchedChannel" value="{{ $searchData->items[$i]->id->channelId }}">
+                                    <button class="btn-custom btn-custom-secondary search-channel" type="submit" name="addSearchedChannel" value="{{ $searchData->items[$i]->id->channelId }}">
                                         Add Channel
                                     </button>
                                     <input name="_token" value="{{ csrf_token() }}" type="hidden">
@@ -91,7 +91,7 @@
                             <div class="row channel-data px-0">
                                 <div class="element-border my-2">
                                     <div class="element-group">
-                                        <input class="video-id p-2 mr-3" name="video_id" type="text">
+                                        <input class="video-id p-2 mr-3" name="video_id" type="text" autocomplete="off">
                                         <button class="btn-custom btn-custom-secondary add-video" name="add_video_popup" value="{{ $channel['id'] }}">Add Video</button>
                                     </div>
                                     <div class="element-group">

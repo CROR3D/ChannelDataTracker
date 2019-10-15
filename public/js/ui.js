@@ -125,6 +125,7 @@ function closePopUp() {
         });
         $(parent).hide();
         clearVideoData();
+        clearErrors('quick');
     });
 }
 
@@ -229,41 +230,44 @@ function validateVideoForm(e) {
     if (videoTitle === "" || typeof videoTitle !== 'string') {
         let titleError = document.getElementById('videoTitleError');
         titleError.textContent = '- Name is required!';
-        setTimeout(function(){
-            titleError.textContent = '';
-        }, 5000);
+        clearErrors();
         isValid = false;
     }
 
     if (videoSettingsEarningFactor < 0 || typeof videoSettingsEarningFactor !== 'number') {
         let earningFactorError = document.getElementById('earningFactorError');
         earningFactorError.textContent = '- Earning factor is not valid!';
-        setTimeout(function(){
-            earningFactorError.textContent = '';
-        }, 5000);
+        clearErrors();
         isValid = false;
     }
 
     if (!['HRK', 'USD', 'EUR'].includes(videoSettingsFactorCurrency)) {
         earningFactorError.textContent = '- Factor currency is not valid!';
-        setTimeout(function(){
-            earningFactorError.textContent = '';
-        }, 5000);
+        clearErrors();
         isValid = false;
     }
 
     if (videoSettingsTreshold < 0 || typeof videoSettingsTreshold !== 'number') {
         let videoTresholdError = document.getElementById('videoTresholdError');
         videoTresholdError.textContent = '- Treshold is not defined properly!';
-        setTimeout(function(){
-            videoTresholdError.textContent = '';
-        }, 5000);
+        clearErrors();
         isValid = false;
     }
 
     if(!isValid) e.preventDefault();
 
     return isValid;
+}
+
+function clearErrors(clearMode) {
+    if(clearMode === 'quick') {
+        $('.validation-error').text('');
+    } else {
+        setTimeout(function(){
+            $('.validation-error').text('');
+        }, 5000);
+    }
+
 }
 
 function displayHistory(history) {

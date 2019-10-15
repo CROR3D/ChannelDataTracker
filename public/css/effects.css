@@ -59,7 +59,7 @@
 }
 
 .channel:hover > .hvr-wobble-horizontal, .channel:focus > .hvr-wobble-horizontal, .channel:active > .hvr-wobble-horizontal {
-    color: #78cc78;
+    color: #62c462;
     -webkit-animation-name: hvr-wobble-horizontal;
     animation-name: hvr-wobble-horizontal;
     -webkit-animation-duration: 1s;

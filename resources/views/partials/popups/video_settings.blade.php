@@ -7,9 +7,11 @@
         <div class="p-3">
             <form id="videoSettingsForm" class="form mb-4 p-0" name="videoSettingsForm" method="post" action="{{ route('channels') }}">
                 <div class="form-group text-left">
-                    <label>Change title <span id="videoTitleError" class="text-danger"></span></label>
+                    <label>Change title</label>
+                    <label id="videoTitleError" class="validation-error text-danger"></label>
                     <input id="videoSettingsTitle" class="form-control mb-3" name="videoSettingsTitle" type="text" value="">
-                    <label>Earning factor per 1000 views <span id="earningFactorError" class="text-danger"></span></label>
+                    <label>Earning factor per 1000 views</label>
+                    <label id="earningFactorError" class="validation-error text-danger"></label>
                     <div class="row">
                         <div class="col-md-8">
                             <input id="videoSettingsEarningFactor" class="form-control mb-3" name="videoSettingsEarningFactor" type="text" value="">
@@ -22,16 +24,17 @@
                             </select>
                         </div>
                     </div>
-                    <label>Get notified when video exceeds view limit <span id="videoTresholdError" class="text-danger"></span></label>
+                    <label>Get notified when video exceeds view limit</label>
+                    <label id="videoTresholdError" class="validation-error text-danger"></label>
                     <input id="videoSettingsTreshold" class="form-control mb-3" name="videoSettingsTreshold" type="text" value="">
                     <label>Message related to this video</label>
                     <input id="videoSettingsNote" class="form-control mb-5" name="videoSettingsNote" type="text" value="">
                     <div class="row">
                         <div class="col">
-                            <button id="videoSettingsAddOrUpdate" class="btn btn-secondary btn-block" name="" type="submit" value=""></button>
+                            <button id="videoSettingsAddOrUpdate" class="btn-custom btn-custom-secondary btn-block" name="" type="submit" value=""></button>
                         </div>
                         <div class="col">
-                            <button id="videoSettingsDelete" class="btn btn-danger btn-block" name="videoSettingsDelete" type="submit" value="">Delete Video</button>
+                            <button id="videoSettingsDelete" class="btn-custom btn-custom-danger btn-block" name="videoSettingsDelete" type="submit" value="">Delete Video</button>
                         </div>
                     </div>
                     <input id="videoSettingsChannelId" name="videoSettingsChannelId" value="" type="hidden">
