@@ -147,14 +147,14 @@ function caclulateReachedTresholds() {
     let channels = document.getElementsByClassName('channel');
 
     for(let i = 0; i < channels.length; i++) {
-        let reached = channels[i].lastElementChild,
-            current = reached.firstElementChild,
-            total = reached.lastElementChild,
+        let reached = channels[i].lastElementChild.getElementsByTagName('span'),
+            current = reached[0],
+            total = reached[1],
             channelData = channels[i].nextElementSibling.lastElementChild,
             videoData = channelData.children,
             currentTreshold = 0,
             totalTreshold = 0;
-
+            
             for(let x = 0; x < videoData.length; x++) {
                 if(videoData[x].classList.contains('video-row')) {
                     let currentTresholdViews = parseFloat(videoData[x].children[3].firstElementChild.innerText),

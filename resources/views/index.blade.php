@@ -46,7 +46,7 @@
 
             <div class="container-fluid">
                 <div id="search-result" class="row mt-2 p-3">
-                    @if(isset($searchData))
+                    @if(!is_null($searchData))
                         @for($i = 0; $i < count($searchData->items); $i++)
                             <div class="text-center search-element p-3">
                                 <form method="post" action="{{ route('channels') }}">
@@ -80,9 +80,10 @@
                             <?php $tracking = $channel['tracking'] ?>
                             <div class="row channel text-center py-3">
                                 <div class="col hvr-wobble-horizontal channel-title">{{ $channel['name'] }}</div>
-                                <div class="col">{{ $channel[$tracking]['subs'] }}</div>
-                                <div class="col">{{ $channel[$tracking]['views'] }}</div>
+                                <div class="col"><p class="channel-col-description">SUBS: </p>{{ $channel[$tracking]['subs'] }}</div>
+                                <div class="col"><p class="channel-col-description">VIEWS: </p>{{ $channel[$tracking]['views'] }}</div>
                                 <div class="col">
+                                    <p class="channel-col-description">REACHED: </p>
                                     <span>0</span>
                                     /
                                     <span>0</span>
@@ -93,8 +94,6 @@
                                     <div class="element-group">
                                         <input class="video-id p-2 mr-3" name="video_id" type="text" autocomplete="off">
                                         <button class="btn-custom btn-custom-secondary add-video" name="add_video_popup" value="{{ $channel['id'] }}">Add Video</button>
-                                    </div>
-                                    <div class="element-group">
                                         <button class="btn-custom btn-custom-secondary edit-channel" name="edit-channel" value="{{ $channel['id'] }}" data-channel="{{ json_encode($channel) }}">Channel Settings</button>
                                     </div>
                                 </div>
@@ -146,7 +145,7 @@
                                                 </div>
                                             </div>
                                         @endforeach
-                                    @endif
+                                @endif
                                 </div>
                             </div>
                         @endforeach

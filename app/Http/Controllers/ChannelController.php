@@ -18,7 +18,7 @@ class ChannelController extends Controller
     {
         $data = $this->getData();
 
-        return view('index')->with('data', $data);
+        return view('index')->with(['searchData' => null, 'data' => $data]);
     }
 
     public function manageForms(Request $request)
@@ -28,10 +28,9 @@ class ChannelController extends Controller
 
                 if($request->search === null) return redirect()->route('index');
                 $searchData = $this->searchChannels($request->maxResults, $request->search);
-                $data = Channel::all();
-                $videos = Video::all();
+                $data = $this->getData();
 
-                return view('index')->with(['searchData' => $searchData, 'data' => $data, 'videos' => $videos]);
+                return view('index')->with(['searchData' => $searchData, 'data' => $data]);
                 break;
 
             case $request->has('addChannel'):
