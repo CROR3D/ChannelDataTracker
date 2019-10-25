@@ -176,6 +176,19 @@ label,
     float: left;
 }
 
+.plural {
+    display: none;
+}
+
+.slash {
+    display: inline;
+}
+
+.add-video span,
+.edit-channel span {
+    pointer-events: none;
+}
+
 .edit-channel {
     float: right;
 }
@@ -201,7 +214,7 @@ label,
     padding: 0 15px;
 }
 
-.channel-col-description {
+.col-description {
     display: none;
     color: #6c757d;
 }
@@ -255,7 +268,6 @@ label,
    display: block;
    height: 0;
    clear: both;
-   margin-bottom: 15px;
 }
 
 .element-form {
@@ -331,18 +343,57 @@ input[type=radio] {
 }
 
 .earning-border {
-    border-bottom: 1px solid #62c462;
+    text-decoration: underline;
+    color: #62c462;
 }
 
 @media only screen and (max-width: 991px) {
     #search-result {
+        margin-left: 0 !important;
+    }
+
+    #search-result,
+    #search-result .search-element {
         display: block;
+        width: 100%;
     }
 
     #search-result .search-element {
+        border-style: none;
+        border-bottom: 1px solid rgb(50, 50, 50);
+        border-radius: 0;
+    }
+
+    #search-result .search-element:last-child {
+        border-style: none;
+    }
+
+    #search-result .search-element::after {
+       content: " ";
+       display: block;
+       height: 0;
+       clear: both;
+    }
+
+    .channel-img,
+    #search-result .search-element form p,
+    #search-result .search-element form button {
         display: inline-block;
-        width: 25%;
-        margin: 0;
+        float: left;
+        margin-bottom: 3px !important;
+        margin-top: 3px !important;
+    }
+
+    #search-result .search-element form p {
+        margin-left: 20px;
+    }
+
+    #search-result .search-element form button {
+        margin-left: 10px;
+    }
+
+    #search-result .search-element form button {
+        float: right;
     }
 
     #search-form {
@@ -352,6 +403,19 @@ input[type=radio] {
     .element-border .element-group {
         display: block;
         width: 100%;
+    }
+
+    .video-row .col span {
+        display: block;
+    }
+
+    .last-row button {
+        width: 100%;
+        border-radius: 0;
+    }
+
+    .slash {
+        display: none;
     }
 }
 
@@ -365,6 +429,52 @@ input[type=radio] {
     .jumbotron {
         border-style: none;
         border-radius: 0;
+    }
+
+    .channel,
+    .video-header,
+    .video-row {
+        display: block;
+    }
+
+    .video-row::after {
+       content: " ";
+       display: block;
+       height: 0;
+       clear: both;
+    }
+
+    .plural {
+        display: inline;
+    }
+
+    .fav-header .col:not(:first-child),
+    .video-header .col:not(:first-child) {
+        display: none;
+    }
+
+    .fav-header .col:first-child,
+    .channel .col:first-child {
+        text-align: center;
+    }
+
+    .col-description {
+        display: inline;
+    }
+
+    .last-row {
+        margin-top: 10px;
+        text-align: center !important;
+    }
+
+    .last-row button {
+        width: 25%;
+        margin: 0 !important;
+    }
+
+    .slash,
+    .video-row .col span {
+        display: inline;
     }
 }
 
@@ -420,25 +530,59 @@ input[type=radio] {
         border-radius: 0;
     }
 
+    #search-result .search-element form {
+        text-align: center;
+    }
+
+    .channel-img,
+    #search-result .search-element form p,
+    #search-result .search-element form button {
+        display: block;
+        float: none;
+        margin: 10px auto !important;
+    }
+
     .display-4,
     .lead {
         text-align: center;
     }
 
-    .channel {
-        display: block;
+    .last-row button {
+        float: left;
+        width: 50%;
+    }
+}
+
+@media only screen and (max-width: 420px) {
+    #channel-settings-form-wrapper,
+    #video-info-form-wrapper,
+    #video-settings-form-wrapper,
+    #channel-form-wrapper {
+        width: 100%;
+        border-style: none;
+        border-radius: 0;
     }
 
-    .fav-header .col:not(:first-child) {
+    #channel-settings-form-wrapper {
+        height: 520px;
+    }
+}
+
+
+
+@media only screen and (max-width: 365px) {
+    .add-video span,
+    .edit-channel span {
+        display: block;
+    }
+}
+
+@media only screen and (max-width: 350px) {
+    .slash {
         display: none;
     }
 
-    .fav-header .col:first-child,
-    .channel .col:first-child {
-        text-align: center;
-    }
-
-    .channel-col-description {
-        display: inline;
+    .video-row .col span {
+        display: block;
     }
 }

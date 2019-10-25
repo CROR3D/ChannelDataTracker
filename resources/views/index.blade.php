@@ -51,7 +51,7 @@
                             <div class="text-center search-element p-3">
                                 <form method="post" action="{{ route('channels') }}">
                                     <img class="mb-2 channel-img" src="{{ $searchData->items[$i]->snippet->thumbnails->default->url }}" />
-                                    <p class="mb-2">{{ $searchData->items[$i]->snippet->title }}</p>
+                                    <p class="mb-2">{{ str_limit($searchData->items[$i]->snippet->title, $limit = 15, $end = ' ...') }}</p>
                                     <button class="btn-custom btn-custom-secondary search-channel" type="submit" name="addSearchedChannel" value="{{ $searchData->items[$i]->id->channelId }}">
                                         Add Channel
                                     </button>
@@ -69,7 +69,7 @@
                 <h4 class="mb-5 lead">Tracking date: </h4>
                 @include('notification')
                 <div class="row py-3 text-center fav-header">
-                    <div class="col">CHANNEL</div>
+                    <div class="col">CHANNEL<span class="plural">S</span></div>
                     <div class="col">SUBSCRIBERS</div>
                     <div class="col">VIEWS</div>
                     <div class="col">REACHED</div>
@@ -80,10 +80,10 @@
                             <?php $tracking = $channel['tracking'] ?>
                             <div class="row channel text-center py-3">
                                 <div class="col hvr-wobble-horizontal channel-title">{{ $channel['name'] }}</div>
-                                <div class="col"><p class="channel-col-description">SUBS: </p>{{ $channel[$tracking]['subs'] }}</div>
-                                <div class="col"><p class="channel-col-description">VIEWS: </p>{{ $channel[$tracking]['views'] }}</div>
+                                <div class="col"><p class="col-description">SUBS: </p>{{ $channel[$tracking]['subs'] }}</div>
+                                <div class="col"><p class="col-description">VIEWS: </p>{{ $channel[$tracking]['views'] }}</div>
                                 <div class="col">
-                                    <p class="channel-col-description">REACHED: </p>
+                                    <p class="col-description">REACHED: </p>
                                     <span>0</span>
                                     /
                                     <span>0</span>
@@ -93,14 +93,14 @@
                                 <div class="element-border my-2">
                                     <div class="element-group">
                                         <input class="video-id p-2 mr-3" name="video_id" type="text" autocomplete="off">
-                                        <button class="btn-custom btn-custom-secondary add-video" name="add_video_popup" value="{{ $channel['id'] }}">Add Video</button>
-                                        <button class="btn-custom btn-custom-secondary edit-channel" name="edit-channel" value="{{ $channel['id'] }}" data-channel="{{ json_encode($channel) }}">Channel Settings</button>
+                                        <button class="btn-custom btn-custom-secondary add-video" name="add_video_popup" value="{{ $channel['id'] }}">Add <span>Video</span></button>
+                                        <button class="btn-custom btn-custom-secondary edit-channel" name="edit-channel" value="{{ $channel['id'] }}" data-channel="{{ json_encode($channel) }}">Channel <span>Settings</span></button>
                                     </div>
                                 </div>
                                 @if(count($channel['channel_videos']) > 0)
                                 <div class="container-fluid element-border my-2 video-data">
                                     <div class="row video-header text-center p-3">
-                                        <div class="col">VIDEO</div>
+                                        <div class="col">VIDEO<span class="plural">S</span></div>
                                         <div class="col">VIEWS</div>
                                         <div class="col">VIEWS/MONTH</div>
                                         <div class="col">TRESHOLD</div>
@@ -125,16 +125,19 @@
                                             <div class="row video-row text-center p-3" data-video="{{ $video[0] }}">
                                                 <div class="col"><a class="video-link" href="https://www.youtube.com/watch?v={{ $video[0]->id }}" target="_blank" data-toggle="tooltip" data-placement="bottom" title="{{ $video[0]->name }}">{{ str_limit($video[0]->name, $limit = 18, $end = ' ...') }}</a></div>
                                                 <div class="col">
+                                                    <p class="col-description">VIEWS: </p>
                                                     <span>{{ $video[0]->views }} </span>
                                                     <span class="text-success earning-border">{{ $video[1]['basedOnViews'] }}</span>
                                                 </div>
                                                 <div class="col">
+                                                    <p class="col-description">MONTHLY VIEWS: </p>
                                                     <span>{{ $video[0]->monthly_views }} </span>
                                                     <span class="text-success earning-border">{{ $video[1]['basedOnMonthlyViews'] }}</span>
                                                 </div>
                                                 <div class="col">
+                                                    <p class="col-description">TRESHOLD: </p>
                                                     <span class="text-danger">{{ $video[0]->views - $video[0]->treshold_views }}</span>
-                                                    /
+                                                    <p class="slash">/</p>
                                                     <span>{{ $video[0]->treshold }}</span>
                                                 </div>
                                                 <div class="col last-row">
