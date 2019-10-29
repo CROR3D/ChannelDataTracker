@@ -178,12 +178,6 @@ class ChannelController extends Controller
             'views' => $channel['views']
         ];
 
-        $dailyData['day3'] = [
-            'subs' => $channel['subs'] + 200,
-            'videos' => $channel['videos'] - 15,
-            'views' => $channel['views'] - 3500
-        ];
-
         $newChannel = new Channel;
         $newChannel->saveChannel($channel);
 
@@ -437,7 +431,13 @@ class ChannelController extends Controller
         $day = $today->day;
         $dailyTracking = DailyTracker::where('channel_id', $id)->first();
         $todayData = $dailyTracking->{'day' . $day};
-        $yesterdayData = $dailyTracking->{'day' . ($day - 1)};
+
+        if($day === 1) {
+            $lastDayOfPreviousMonth = $today->startOfMonth()->subSeconds(1)->day;
+            $yesterdayData = $dailyTracking->{'day' . $lastDayOfPreviousMonth};
+        } else {
+            $yesterdayData = $dailyTracking->{'day' . ($day - 1)};
+        }
 
         return [
             'subs' => $todayData['subs'] - $yesterdayData['subs'],

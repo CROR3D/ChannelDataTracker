@@ -14,6 +14,7 @@ class CreateDailyTrackerTable extends Migration
     public function up()
     {
         Schema::create('daily_tracker', function (Blueprint $table) {
+            $table->bigIncrements('id');
             $table->string('channel_id');
             $table->string('day1')->nullable();
             $table->string('day2')->nullable();

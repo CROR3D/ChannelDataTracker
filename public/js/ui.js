@@ -97,6 +97,10 @@ function popUpVideoForm() {
         }
     });
 
+    $(document).on('click', '.video-id', function(e) {
+        $(e.target).removeAttr('placeholder');
+    });
+
     $(document).on('click', '.video-settings', function(e) {
         let parent = e.target.parentElement.parentElement,
             videoData = JSON.parse(parent.dataset.video);
@@ -154,7 +158,7 @@ function caclulateReachedTresholds() {
             videoData = channelData.children,
             currentTreshold = 0,
             totalTreshold = 0;
-            
+
             for(let x = 0; x < videoData.length; x++) {
                 if(videoData[x].classList.contains('video-row')) {
                     let currentTresholdViews = parseFloat(videoData[x].children[3].firstElementChild.innerText),
