@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use App\Facades\ScheduleHelper;
 use App\Channel;
 use App\DailyTracker;
 use Carbon\Carbon;
@@ -40,11 +41,11 @@ class TrackChannelsDaily extends Command
      */
     public function handle()
     {
-        // NEED TO GET CURRENT CHANNEL DATA FROM API NOT FROM DATABASE
-        $channels = Channel::all();
+        $channels = ScheduleHelper::getCurrentChannelsData();
 
         foreach ($channels as $channel) {
-            $channelId = $channel->id;
+            $data = $channel->items[0];
+            $channelId = $data->id;
             $dailyTracker = DailyTracker::where('channel_id', $channelId)->first();
             $today = Carbon::now();
             $day = $today->day;
@@ -59,9 +60,9 @@ class TrackChannelsDaily extends Command
 
             $updateData = [
                 $dataDay => [
-                    'subs' => $channel['subs'],
-                    'videos' => $channel['videos'],
-                    'views' => $channel['views']
+                    'subs' => $data->statistics->subscriberCount,
+                    'videos' => $data->statistics->videoCount,
+                    'views' => $data->statistics->viewCount
                 ]
             ];
 
