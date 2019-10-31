@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -8,10 +8,11 @@ class History extends Model
 {
     protected $table = 'history';
 
+    public $incrementing = false;
+
     protected $fillable = [
         'video_id',
         'tresholds_reached',
-        'current_month',
         'january',
         'february',
         'march',
@@ -30,7 +31,7 @@ class History extends Model
         'january' => 'array',
         'february' => 'array',
         'march' => 'array',
-        'april' => 'array', 
+        'april' => 'array',
         'may' => 'array',
         'june' => 'array',
         'july' => 'array',
@@ -53,6 +54,6 @@ class History extends Model
 
     public function video()
     {
-        return $this->belongsTo('App\Video');
+        return $this->belongsTo('App\Models\Video');
     }
 }

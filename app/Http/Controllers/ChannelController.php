@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use Config;
+use ScheduleHelper;
 use Carbon\Carbon;
-use App\Channel;
-use App\Video;
-use App\History;
-use App\DailyTracker;
+use App\Models\Channel;
+use App\Models\Video;
+use App\Models\History;
+use App\Models\ChannelDailyTracker;
+use App\Models\VideoDailyTracker;
 use Illuminate\Http\Request;
 use GuzzleHttp\Client;
 use Illuminate\Validation\Rule;
@@ -25,7 +27,6 @@ class ChannelController extends Controller
     {
         switch(true) {
             case $request->has('searchBtn'):
-
                 if($request->search === null) return redirect()->route('index');
                 $searchData = $this->searchChannels($request->maxResults, $request->search);
                 $data = $this->getData();
@@ -35,14 +36,12 @@ class ChannelController extends Controller
 
             case $request->has('addChannel'):
             case $request->has('addSearchedChannel'):
-
                 $id = ($request->id) ? $request->id : $request->addSearchedChannel;
                 $data = $this->addChannel($id);
                 $this->storeChannel($data->items[0]);
                 break;
 
             case $request->has('channelSettingsUpdate'):
-
                 $channelId = $request->channelSettingsChannelId;
                 $channelData = [
                     'title' => $request->channelSettingsTitle,
@@ -52,13 +51,13 @@ class ChannelController extends Controller
                 ];
                 $this->updateChannel($channelId, $channelData);
                 break;
-            case $request->has('channelSettingsDelete'):
 
+            case $request->has('channelSettingsDelete'):
                 $channelId = $request->channelSettingsChannelId;
                 $this->deleteChannel($channelId);
                 break;
-            case $request->has('videoSettingsAdd'):
 
+            case $request->has('videoSettingsAdd'):
                 $videoId = $request->videoSettingsAdd;
                 $channelId = $request->videoSettingsChannelId;
                 $videoExists = Video::where('id', $videoId)->exists();
@@ -69,12 +68,13 @@ class ChannelController extends Controller
                 }
 
                 $video = $this->addVideo($videoId);
-                $videoChannelId = $video->items[0]->snippet->channelId;
 
-                if($video === null) {
+                if($video === null || empty($video->items)) {
                     session()->flash('error', 'Video not found!');
                     return redirect()->route('index');
                 }
+
+                $videoChannelId = $video->items[0]->snippet->channelId;
 
                 if($videoChannelId !== $channelId) {
                     session()->flash('error', 'Video doesn\'t belong to the channel you want to add it to!');
@@ -93,7 +93,6 @@ class ChannelController extends Controller
                 break;
 
             case $request->has('videoSettingsUpdate'):
-
                 $videoData = array(
                     'name' => $request->videoSettingsTitle,
                     'earning_factor' => $request->videoSettingsEarningFactor,
@@ -104,8 +103,8 @@ class ChannelController extends Controller
 
                 $this->updateTrackedVideo($request->videoSettingsUpdate, $videoData);
                 break;
-            case $request->has('videoSettingsDelete'):
 
+            case $request->has('videoSettingsDelete'):
                 $videoId = $request->videoSettingsDelete;
                 $this->deleteVideo($videoId);
                 break;
@@ -181,8 +180,8 @@ class ChannelController extends Controller
         $newChannel = new Channel;
         $newChannel->saveChannel($channel);
 
-        $newDailyTracker = new DailyTracker;
-        $newDailyTracker->saveDailyTracker($dailyData);
+        $newChannelDailyTracker = new ChannelDailyTracker;
+        $newChannelDailyTracker->saveChannelDailyTracker($dailyData);
     }
 
     private function updateChannel($id, $channelData)
@@ -212,26 +211,42 @@ class ChannelController extends Controller
 
     private function storeVideo($data, $definedData)
     {
+        $today = Carbon::now();
+        $day = $today->day;
+
         $video = array(
             'id' => $data->id,
             'channel_id' => $data->snippet->channelId,
             'name' => ($definedData['title'] === null) ? $data->snippet->title : $definedData['title'],
-            'views' => $data->statistics->viewCount,
             'tracked_zero' => $data->statistics->viewCount,
+            'month_zero' => $data->statistics->viewCount,
             'earning_factor' => $definedData['videoSettingsEarningFactor'],
             'factor_currency' => $definedData['videoSettingsFactorCurrency'],
-            'monthly_views' => 0,
-            'treshold_views' => $data->statistics->viewCount,
             'treshold' => $definedData['videoSettingsTreshold'],
-            'likes' => $data->statistics->likeCount,
-            'dislikes' => $data->statistics->dislikeCount,
-            'comments' => $data->statistics->commentCount,
-            'note' => $definedData['videoSettingsNote'],
-            'privacy' => $data->status->privacyStatus
+            'note' => $definedData['videoSettingsNote']
         );
+
+        $dailyData = [
+            'video_id' => $data->id
+        ];
+
+        $dailyData['day' . $day] = [
+            'views' => $video['tracked_zero'],
+            'earned' => 0
+        ];
+
+        $historyData = [
+            'video_id' => $data->id
+        ];
 
         $newVideo = new Video;
         $newVideo->saveVideo($video);
+
+        $newVideoDailyTracker = new VideoDailyTracker;
+        $newVideoDailyTracker->saveVideoDailyTracker($dailyData);
+
+        $newVideoHistory = new History;
+        $newVideoHistory->saveHistory($historyData);
     }
 
     private function updateTrackedVideo($id, $videoData)
@@ -243,62 +258,83 @@ class ChannelController extends Controller
     private function getData()
     {
         $channels = Channel::all();
+        $today = Carbon::now();
+        $day = $today->day;
         $data = [];
 
-        foreach ($channels as $channel) {
-            $channelId = $channel->id;
-            $dailyData = $this->getDailyData($channelId);
+        foreach ($channels as $dbChannel) {
+            $channelId = $dbChannel->id;
+            $channelCurrentData = ScheduleHelper::getChannelData($channelId);
+
+            $channel = [
+                'subs' => $channelCurrentData->items[0]->statistics->subscriberCount,
+                'videos' => $channelCurrentData->items[0]->statistics->videoCount,
+                'views' => $channelCurrentData->items[0]->statistics->viewCount
+            ];
+
+            $dailyChannelData = $this->getDailyData($channelId, 'channel');
 
             $channelData = array(
                 $channelId => [
                     'id' => $channelId,
-                    'name' => $channel->name,
-                    'tracking' => $channel->tracking,
-                    'total' => [
-                        'subs' => $channel->subs,
-                        'videos' => $channel->videos,
-                        'views' => $channel->views,
-                    ],
-                    'daily' => [
-                        'subs' => $dailyData['subs'],
-                        'videos' => $dailyData['videos'],
-                        'views' => $dailyData['views'],
-                    ],
-                    'average' => [
-                        'subs' => 16,
-                        'videos' => 7,
-                        'views' => 17,
-                    ],
+                    'name' => $dbChannel->name,
+                    'tracking' => $dbChannel->tracking,
                     'channel_videos' => [],
-                    'channel_calculation' => [
+                    'channel_data' => [
                         'total' => [
-                            'caluculatedViews' => [
-                                'views' => 0,
-                                'monthlyViews' => 0
-                            ],
-                            'caluculatedEarnings' => [
-                                'views' => 0,
-                                'monthlyViews' => 0
-                            ]
+                            'subs' => $channel['subs'],
+                            'views' => $channel['views']
                         ],
                         'daily' => [
-                            'caluculatedViews' => [
-                                'views' => 0,
-                                'monthlyViews' => 0
+                            'yesterday' => [
+                                'subs' => $dailyChannelData['today']['subs'] - $dailyChannelData['yesterday']['subs'],
+                                'views' => $dailyChannelData['today']['views'] - $dailyChannelData['yesterday']['views']
                             ],
-                            'caluculatedEarnings' => [
-                                'views' => 0,
-                                'monthlyViews' => 0
+                            'today' => [
+                                'subs' => $channel['subs'] - $dailyChannelData['today']['subs'],
+                                'views' => $channel['views'] - $dailyChannelData['today']['views']
                             ]
                         ],
                         'average' => [
-                            'caluculatedViews' => [
-                                'views' => 0,
-                                'monthlyViews' => 0
+                            'monthly' => [
+                                'subs' => 0,
+                                'views' => 0
                             ],
-                            'caluculatedEarnings' => [
+                            'yearly' => [
+                                'subs' => 0,
+                                'views' => 0
+                            ]
+                        ]
+                    ],
+                    'channel_calculation' => [
+                        'total' => [
+                            'calculatedViews' => [
                                 'views' => 0,
-                                'monthlyViews' => 0
+                                'earning' => 0
+                            ],
+                            'calculatedMonthlyViews' => [
+                                'monthlyViews' => 0,
+                                'earning' => 0
+                            ]
+                        ],
+                        'daily' => [
+                            'calculatedYesterday' => [
+                                'views' => 0,
+                                'earning' => 0
+                            ],
+                            'calculatedToday' => [
+                                'views' => 0,
+                                'earning' => 0
+                            ]
+                        ],
+                        'average' => [
+                            'calculatedMonthViews' => [
+                                'views' => 0,
+                                'earning' => 0
+                            ],
+                            'calculatedYearViews' => [
+                                'views' => 0,
+                                'earning' => 0
                             ]
                         ]
                     ]
@@ -309,53 +345,135 @@ class ChannelController extends Controller
             $videoCount = count($videos);
             $calculationCurrency = null;
 
-            foreach ($videos as $video) {
-                if(!$calculationCurrency) $calculationCurrency = $video->factor_currency;
-                $channelVideo = [];
-                array_push($channelVideo, $video);
+            foreach ($videos as $dbVideo) {
+                $videoCurrentData = ScheduleHelper::getVideoData($dbVideo->id);
+                $videoViews =  $videoCurrentData->items[0]->statistics->viewCount;
+
+                $dailyVideoData = $this->getDailyData($dbVideo->id, 'video');
+
+                $calculatedVideoDailyData = [
+                    'yesterdayViews' => $dailyVideoData['today']['views'] - $dailyVideoData['yesterday']['views'],
+                    'todayViews' => $videoViews - $dailyVideoData['today']['views']
+                ];
+
+                if(!$calculationCurrency) $calculationCurrency = $dbVideo->factor_currency;
+                $channelVideo = [
+                    'id' => $dbVideo->id,
+                    'channel_id' => $dbVideo->channel_id,
+                    'name' => $dbVideo->name,
+                    'tracked_zero' => $dbVideo->tracked_zero,
+                    'month_zero' => $dbVideo->month_zero,
+                    'earning_factor' => $dbVideo->earning_factor,
+                    'factor_currency' => $dbVideo->factor_currency,
+                    'treshold' => $dbVideo->treshold,
+                    'note' => $dbVideo->note,
+                    'video_data' => [
+                        'total' => [
+                            'calculatedViews' => [
+                                'views' => $videoViews,
+                                'monthlyViews' => $videoViews - $dbVideo->month_zero
+                            ]
+                        ]
+                    ]
+                ];
 
                 $currencyExchange = $this->searchCurrencyExchangeValues();
 
-                $earningsOnViewsInDollars = (($video->views - $video->tracked_zero) / 1000) * $video->earning_factor;
-                $earningsOnMonthlyViewsInDollars = ($video->monthly_views / 1000) * $video->earning_factor;
+                $earningsOnViewsInDollars = (($videoViews - $channelVideo['tracked_zero']) / 1000) * $channelVideo['earning_factor'];
+                $earningsOnMonthlyViewsInDollars = (($videoViews - $channelVideo['month_zero']) / 1000) * $channelVideo['earning_factor'];
 
-                $basedOnViews = $this->exchangeCurrency($video->factor_currency, $currencyExchange, $earningsOnViewsInDollars);
-                $basedOnMonthlyViews = $this->exchangeCurrency($video->factor_currency, $currencyExchange, $earningsOnMonthlyViewsInDollars);
+                $basedOnViews = $this->exchangeCurrency(
+                                    $channelVideo['factor_currency'],
+                                    $currencyExchange,
+                                    $earningsOnViewsInDollars
+                                );
 
-                $basedOnViewsWithCurrency = $this->addCurrency($basedOnViews, $video->factor_currency);
-                $basedOnMonthlyViewsWithCurrency = $this->addCurrency($basedOnMonthlyViews, $video->factor_currency);
+                $basedOnMonthlyViews = $this->exchangeCurrency(
+                                           $channelVideo['factor_currency'],
+                                           $currencyExchange,
+                                           $earningsOnMonthlyViewsInDollars
+                                       );
 
-                $videoEarningsInDollars = [
-                    'basedOnViews' => $basedOnViewsWithCurrency,
-                    'basedOnMonthlyViews' => $basedOnMonthlyViewsWithCurrency,
-                ];
+                $channelVideo['video_data']['total']['calculatedEarnings']['views'] = $this->addCurrency(
+                                                                                          $basedOnViews,
+                                                                                          $channelVideo['factor_currency']
+                                                                                      );
 
-                array_push($channelVideo, $videoEarningsInDollars);
+                $channelVideo['video_data']['total']['calculatedEarnings']['monthlyViews'] = $this->addCurrency(
+                                                                                                $basedOnMonthlyViews,
+                                                                                                $channelVideo['factor_currency']
+                                                                                             );
 
-                $history = History::where('video_id', $video->id)->first();
-                array_push($channelVideo, $history);
+                $channelVideo['video_data']['daily']['calculatedViews']['yesterdayViews'] = $calculatedVideoDailyData['yesterdayViews'];
+                $channelVideo['video_data']['daily']['calculatedViews']['todayViews'] = $calculatedVideoDailyData['todayViews'];
+
+                $channelVideo['video_data']['daily']['calculatedEarnings']['yesterdayViews'] = $this->addCurrency(
+                                                                                                    $this->exchangeCurrency($channelVideo['factor_currency'], $currencyExchange, $dailyVideoData['yesterday']['earned']),
+                                                                                                    $channelVideo['factor_currency']
+                                                                                                );
+
+                $channelVideo['video_data']['daily']['calculatedEarnings']['todayViews'] = $this->addCurrency(
+                                                                                                $this->exchangeCurrency($channelVideo['factor_currency'], $currencyExchange, $dailyVideoData['today']['earned']),
+                                                                                                $channelVideo['factor_currency']
+                                                                                            );
+
+                $videoMonthData = $this->getMonthData($dbVideo->id, 'video');
+                $videoMonthData = $videoMonthData->getAttributes();
+                $videoMonthData = array_slice($videoMonthData, 1, -2);
+
+                $videoYearData = $this->getVideoYearData($dbVideo->id);
+                $videoYearData = $videoYearData->getAttributes();
+                $videoYearData = array_slice($videoYearData, 2, -2);
+
+                $channelVideo['video_data']['average']['calculatedViews']['lastMonthViews'] = $this->calculateAverage($videoMonthData, $channelVideo['tracked_zero'], 'views');
+                $channelVideo['video_data']['average']['calculatedViews']['lastYearViews'] = $this->calculateAverage($videoYearData, $channelVideo['tracked_zero'], 'views');
+                $channelVideo['video_data']['average']['calculatedEarnings']['lastMonthViews'] = $this->calculateAverage($videoMonthData, null, 'earnings');
+                $channelVideo['video_data']['average']['calculatedEarnings']['lastYearViews'] = $this->calculateAverage($videoYearData, null, 'earnings');
+
+                $history = History::where('video_id', $channelVideo['id'])->first();
+                $channelVideo['history'] = $history;
 
                 array_push($channelData[$channelId]['channel_videos'], $channelVideo);
 
                 if($videoCount > 1) {
-                    if($calculationCurrency !== $video->factor_currency) {
-                        $basedOnViewsExchanged = $this->exchangeCurrency($calculationCurrency, $currencyExchange, $earningsOnViewsInDollars);
-                        $basedOnMonthlyViewsExchanged = $this->exchangeCurrency($calculationCurrency, $currencyExchange, $earningsOnMonthlyViewsInDollars);
-                        $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['views'] = $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['views'] + $basedOnViewsExchanged;
-                        $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['monthlyViews'] = $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['monthlyViews'] + $basedOnMonthlyViewsExchanged;
+                    if($calculationCurrency !== $channelVideo['factor_currency']) {
+                        $basedOnViewsExchanged = $this->exchangeCurrency(
+                                                    $calculationCurrency,
+                                                    $currencyExchange,
+                                                    $earningsOnViewsInDollars
+                                                );
+                        $basedOnMonthlyViewsExchanged = $this->exchangeCurrency(
+                                                            $calculationCurrency,
+                                                            $currencyExchange,
+                                                            $earningsOnMonthlyViewsInDollars
+                                                        );
+
+                        $channelData[$channelId]['channel_calculation']['total']['calculatedViews']['earning'] =
+                            $channelData[$channelId]['channel_calculation']['total']['calculatedViews']['earning'] + $basedOnViewsExchanged;
+
+                        $channelData[$channelId]['channel_calculation']['total']['calculatedMonthlyViews']['earning'] =
+                            $channelData[$channelId]['channel_calculation']['total']['calculatedMonthlyViews']['earning'] + $basedOnMonthlyViewsExchanged;
                     } else {
-                        $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['views'] = $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['views'] + $basedOnViews;
-                        $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['monthlyViews'] = $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['monthlyViews'] + $basedOnMonthlyViews;
+                        $channelData[$channelId]['channel_calculation']['total']['calculatedViews']['earning'] =
+                            $channelData[$channelId]['channel_calculation']['total']['calculatedViews']['earning'] + $basedOnViews;
+
+                        $channelData[$channelId]['channel_calculation']['total']['calculatedMonthlyViews']['earning'] =
+                            $channelData[$channelId]['channel_calculation']['total']['calculatedMonthlyViews']['earning'] + $basedOnMonthlyViews;
                     }
 
-                    $channelData[$channelId]['channel_calculation']['total']['caluculatedViews']['views'] = $channelData[$channelId]['channel_calculation']['total']['caluculatedViews']['views'] + $video->views;
-                    $channelData[$channelId]['channel_calculation']['total']['caluculatedViews']['monthlyViews'] = $channelData[$channelId]['channel_calculation']['total']['caluculatedViews']['monthlyViews'] + $video->monthly_views;
+                    $channelData[$channelId]['channel_calculation']['total']['calculatedViews']['views'] =
+                        $channelData[$channelId]['channel_calculation']['total']['calculatedViews']['views'] + $videoViews;
 
+                    $channelData[$channelId]['channel_calculation']['total']['calculatedMonthlyViews']['monthlyViews'] =
+                        $channelData[$channelId]['channel_calculation']['total']['calculatedMonthlyViews']['monthlyViews'] + $videoViews - $dbVideo->month_zero;
                 }
             }
 
-            $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['views'] = $this->addCurrency(number_format($channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['views'], 2), $calculationCurrency);
-            $channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['monthlyViews'] = $this->addCurrency(number_format($channelData[$channelId]['channel_calculation']['total']['caluculatedEarnings']['monthlyViews'], 2), $calculationCurrency);
+            $channelData[$channelId]['channel_calculation']['total']['calculatedViews']['earning'] =
+                $this->addCurrency(number_format($channelData[$channelId]['channel_calculation']['total']['calculatedViews']['earning'], 2), $calculationCurrency);
+
+            $channelData[$channelId]['channel_calculation']['total']['calculatedMonthlyViews']['earning'] =
+                $this->addCurrency(number_format($channelData[$channelId]['channel_calculation']['total']['calculatedMonthlyViews']['earning'], 2), $calculationCurrency);
 
             $data = array_merge($data, $channelData);
         }
@@ -416,6 +534,10 @@ class ChannelController extends Controller
     private function deleteChannel($id)
     {
         $channel = Channel::find($id);
+        $videos = Video::where('channel_id', $id)->get();
+        foreach($videos as $video) {
+            $video->delete();
+        }
         $channel->delete();
     }
 
@@ -425,11 +547,17 @@ class ChannelController extends Controller
         $video->delete();
     }
 
-    private function getDailyData($id)
+    private function getDailyData($id, $type)
     {
         $today = Carbon::now();
         $day = $today->day;
-        $dailyTracking = DailyTracker::where('channel_id', $id)->first();
+
+        if($type === 'channel') {
+            $dailyTracking = ChannelDailyTracker::where('channel_id', $id)->first();
+        } else {
+            $dailyTracking = VideoDailyTracker::where('video_id', $id)->first();
+        }
+
         $todayData = $dailyTracking->{'day' . $day};
 
         if($day === 1) {
@@ -439,19 +567,79 @@ class ChannelController extends Controller
             $yesterdayData = $dailyTracking->{'day' . ($day - 1)};
         }
 
-        return [
-            'subs' => $todayData['subs'] - $yesterdayData['subs'],
-            'videos' => $todayData['videos'] - $yesterdayData['videos'],
-            'views' => $todayData['views'] - $yesterdayData['views']
-        ];
+        if($type === 'channel') {
+            return [
+                'yesterday' => [
+                    'subs' => ($yesterdayData['subs']) ? $yesterdayData['subs'] : $todayData['subs'],
+                    'views' => ($yesterdayData['views']) ? $yesterdayData['views'] : $todayData['views'],
+                ],
+                'today' => [
+                    'subs' => $todayData['subs'],
+                    'views' => $todayData['views']
+                ]
+            ];
+        } else {
+            return [
+                'yesterday' => [
+                    'views' => ($yesterdayData['views']) ? $yesterdayData['views'] : $todayData['views'],
+                    'earned' => ($yesterdayData['earned']) ? $yesterdayData['earned'] : $todayData['earned']
+                ],
+                'today' => [
+                    'views' => $todayData['views'],
+                    'earned' => $todayData['earned']
+                ]
+            ];
+        }
     }
 
-    // FUNCTION FOR TASK SCHEDULING (SAVING MONTH HISTORY 1st DAY OF THE MONTH AT 00:00)
-    public function saveMonthHistory($videoId, $monthHistory)
+    private function getMonthData($id, $type)
     {
-        $history = History::where('video_id', $videoId)->first();
-        $history->update($monthHistory);
+        if($type === 'channel') {
+            return ChannelDailyTracker::where('channel_id', $id)->first();
+        } else {
+            return VideoDailyTracker::where('video_id', $id)->first();
+        }
     }
 
-    // FUNCTION FOR TASK SCHEDULING (SAVING DAILY DATA EVERY DAY AT 00:00)
+    private function getVideoYearData($id)
+    {
+        return History::where('video_id', $id)->first();
+    }
+
+    private function calculateAverage($array, $trackedZero, $type)
+    {
+        $sum = 0;
+        $count = 0;
+
+        foreach ($array as $value) {
+            if(gettype($value) === 'string') {
+                $value = json_decode($value);
+                $arrayViews = $value->views;
+                $arrayEarned = $value->earned;
+            } else {
+                $arrayViews = $value['views'];
+                $arrayEarned = $value['earned'];
+            }
+
+            if($type === 'views' && !is_null($value) && $trackedZero) {
+                $number = $arrayViews - $trackedZero;
+                $count++;
+            } elseif($type === 'earnings' && !is_null($value)) {
+                $number = $arrayEarned;
+                $count++;
+            } else {
+                $number = 0;
+            }
+        }
+
+        $sum += $number;
+
+        if($count === 0) return 0;
+
+        if($type === 'views') {
+            return $sum / $count;
+        } else {
+            return number_format($sum / $count, 2);
+        }
+    }
 }

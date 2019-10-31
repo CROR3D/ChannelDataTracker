@@ -1,12 +1,14 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class DailyTracker extends Model
+class ChannelDailyTracker extends Model
 {
-    protected $table = 'daily_tracker';
+    protected $table = 'channel_daily_tracker';
+
+    public $incrementing = false;
 
     protected $fillable = [
         'channel_id',
@@ -21,18 +23,18 @@ class DailyTracker extends Model
         'day21' => 'array', 'day22' => 'array', 'day23' => 'array', 'day24' => 'array', 'day25' => 'array', 'day26' => 'array', 'day27' => 'array', 'day28' => 'array', 'day29' => 'array', 'day30' => 'array', 'day31' => 'array'
     ];
 
-    public function saveDailyTracker($dailyTracker)
+    public function saveChannelDailyTracker($channelDailyTracker)
 	{
-		return $this->create($dailyTracker);
+		return $this->create($channelDailyTracker);
 	}
 
-    public function updateDailyTracker($dailyTracker)
+    public function updateChannelDailyTracker($channelDailyTracker)
 	{
-		return $this->update($dailyTracker);
+		return $this->update($channelDailyTracker);
 	}
 
     public function channel()
     {
-        return $this->belongsTo('App\Channel');
+        return $this->belongsTo('App\Models\Channel');
     }
 }

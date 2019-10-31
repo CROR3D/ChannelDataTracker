@@ -66,7 +66,6 @@
         </div>
         <div id="display-channel" class="jumbotron">
             <div class="container-fluid">
-                <h4 class="mb-5 lead">Tracking date: </h4>
                 @include('notification')
                 <div class="row py-3 text-center fav-header">
                     <div class="col">CHANNEL<span class="plural">S</span></div>
@@ -80,8 +79,40 @@
                             <?php $tracking = $channel['tracking'] ?>
                             <div class="row channel text-center py-3">
                                 <div class="col hvr-wobble-horizontal channel-title">{{ $channel['name'] }}</div>
-                                <div class="col"><p class="col-description">SUBS: </p>{{ $channel[$tracking]['subs'] }}</div>
-                                <div class="col"><p class="col-description">VIEWS: </p>{{ $channel[$tracking]['views'] }}</div>
+                                <div class="col">
+                                    <p class="col-description">SUBS: </p>
+                                    @switch($tracking)
+                                        @case('daily')
+                                            <span>{{ $channel['channel_data']['daily']['yesterday']['subs'] }}</span>
+                                            <span class="text-success">/</span>
+                                            <span>{{ $channel['channel_data']['daily']['today']['subs'] }}</span>
+                                            @break
+                                        @case('average')
+                                            <span>{{ $channel['channel_data']['average']['monthly']['subs'] }}</span>
+                                            <span class="text-success">/</span>
+                                            <span>{{ $channel['channel_data']['average']['yearly']['subs'] }}</span>
+                                            @break
+                                        @default
+                                            {{ $channel['channel_data']['total']['subs'] }}
+                                    @endswitch
+                                </div>
+                                <div class="col">
+                                    <p class="col-description">VIEWS: </p>
+                                    @switch($tracking)
+                                        @case('daily')
+                                            <span>{{ $channel['channel_data']['daily']['yesterday']['views'] }}</span>
+                                            <span class="text-success">/</span>
+                                            <span>{{ $channel['channel_data']['daily']['today']['views'] }}</span>
+                                            @break
+                                        @case('average')
+                                            <span>{{ $channel['channel_data']['average']['monthly']['views'] }}</span>
+                                            <span class="text-success">/</span>
+                                            <span>{{ $channel['channel_data']['average']['yearly']['views'] }}</span>
+                                            @break
+                                        @default
+                                            {{ $channel['channel_data']['total']['views'] }}
+                                    @endswitch
+                                </div>
                                 <div class="col">
                                     <p class="col-description">REACHED: </p>
                                     <span>0</span>
@@ -101,8 +132,30 @@
                                 <div class="container-fluid element-border my-2 video-data">
                                     <div class="row video-header text-center p-3">
                                         <div class="col">VIDEO<span class="plural">S</span></div>
-                                        <div class="col">VIEWS</div>
-                                        <div class="col">VIEWS/MONTH</div>
+                                        <div class="col">
+                                            @switch($tracking)
+                                                @case('daily')
+                                                    VIEWS YESTERDAY
+                                                    @break
+                                                @case('average')
+                                                    VIEWS (last MONTH)
+                                                    @break
+                                                @default
+                                                    VIEWS
+                                            @endswitch
+                                        </div>
+                                        <div class="col">
+                                            @switch($tracking)
+                                                @case('daily')
+                                                    VIEWS TODAY
+                                                    @break
+                                                @case('average')
+                                                    VIEWS (last YEAR)
+                                                    @break
+                                                @default
+                                                    VIEWS/MONTH
+                                            @endswitch
+                                        </div>
                                         <div class="col">TRESHOLD</div>
                                         <div class="col"></div>
                                     </div>
@@ -110,38 +163,104 @@
                                     <div class="row video-header text-center p-3 monthly-highlight">
                                         <div class="col"></div>
                                         <div class="col">
-                                            <span>{{ $channel['channel_calculation']['total']['caluculatedViews']['views'] }}</span>
-                                            <span class="text-success earning-border">{{ $channel['channel_calculation']['total']['caluculatedEarnings']['views'] }}</span>
+                                            @switch($tracking)
+                                                @case('daily')
+                                                    <span>{{ $channel['channel_calculation']['daily']['calculatedYesterday']['views'] }}</span>
+                                                    <span class="text-success earning-border">{{ $channel['channel_calculation']['daily']['calculatedYesterday']['earning'] }}</span>
+                                                    @break
+                                                @case('average')
+                                                    <span>{{ $channel['channel_calculation']['average']['calculatedMonthViews']['views'] }}</span>
+                                                    <span class="text-success earning-border">{{ $channel['channel_calculation']['average']['calculatedMonthViews']['earning'] }}</span>
+                                                    @break
+                                                @default
+                                                    <span>{{ $channel['channel_calculation']['total']['caluculatedViews']['views'] }}</span>
+                                                    <span class="text-success earning-border">{{ $channel['channel_calculation']['total']['caluculatedViews']['earning'] }}</span>
+                                            @endswitch
                                         </div>
                                         <div class="col">
-                                            <span>{{ $channel['channel_calculation']['total']['caluculatedViews']['monthlyViews'] }}</span>
-                                            <span class="text-success earning-border">{{ $channel['channel_calculation']['total']['caluculatedEarnings']['monthlyViews'] }}</span>
+                                            @switch($tracking)
+                                                @case('daily')
+                                                    <span>{{ $channel['channel_calculation']['daily']['calculatedToday']['views'] }}</span>
+                                                    <span class="text-success earning-border">{{ $channel['channel_calculation']['daily']['calculatedToday']['earning'] }}</span>
+                                                    @break
+                                                @case('average')
+                                                    <span>{{ $channel['channel_calculation']['average']['calculatedYearViews']['views'] }}</span>
+                                                    <span class="text-success earning-border">{{ $channel['channel_calculation']['average']['calculatedYearViews']['earning'] }}</span>
+                                                    @break
+                                                @default
+                                                    <span>{{ $channel['channel_calculation']['total']['caluculatedMonthlyViews']['views'] }}</span>
+                                                    <span class="text-success earning-border">{{ $channel['channel_calculation']['total']['caluculatedMonthlyViews']['earning'] }}</span>
+                                            @endswitch
                                         </div>
                                         <div class="col"></div>
                                         <div class="col"></div>
                                     </div>
                                     @endif
                                         @foreach($channel['channel_videos'] as $video)
-                                            <div class="row video-row text-center p-3" data-video="{{ $video[0] }}">
-                                                <div class="col"><a class="video-link" href="https://www.youtube.com/watch?v={{ $video[0]->id }}" target="_blank" data-toggle="tooltip" data-placement="bottom" title="{{ $video[0]->name }}">{{ str_limit($video[0]->name, $limit = 18, $end = ' ...') }}</a></div>
+                                            <div class="row video-row text-center p-3" data-video="{{ json_encode($video) }}">
+                                                <div class="col"><a class="video-link" href="https://www.youtube.com/watch?v={{ $video['id'] }}" target="_blank" data-toggle="tooltip" data-placement="bottom" title="{{ $video['name'] }}">{{ str_limit($video['name'], $limit = 18, $end = ' ...') }}</a></div>
                                                 <div class="col">
-                                                    <p class="col-description">VIEWS: </p>
-                                                    <span>{{ $video[0]->views }} </span>
-                                                    <span class="text-success earning-border">{{ $video[1]['basedOnViews'] }}</span>
+                                                    <p class="col-description">
+                                                        @switch($tracking)
+                                                            @case('daily')
+                                                                VIEWS YESTERDAY:
+                                                                @break
+                                                            @case('average')
+                                                                VIEWS (last MONTH):
+                                                                @break
+                                                            @default
+                                                                VIEWS:
+                                                        @endswitch
+                                                    </p>
+                                                    @switch($tracking)
+                                                        @case('daily')
+                                                            <span>{{ $video['video_data']['daily']['calculatedViews']['yesterdayViews'] }} </span>
+                                                            <span class="text-success earning-border">{{ $video['video_data']['daily']['calculatedEarnings']['yesterdayViews'] }}</span>
+                                                            @break
+                                                        @case('average')
+                                                            <span>{{ $video['video_data']['average']['calculatedViews']['lastMonthViews'] }} </span>
+                                                            <span class="text-success earning-border">{{ $video['video_data']['average']['calculatedEarnings']['lastMonthViews'] }}</span>
+                                                            @break
+                                                        @default
+                                                            <span>{{ $video['video_data']['total']['calculatedViews']['views'] }} </span>
+                                                            <span class="text-success earning-border">{{ $video['video_data']['total']['calculatedEarnings']['views'] }}</span>
+                                                    @endswitch
                                                 </div>
                                                 <div class="col">
-                                                    <p class="col-description">MONTHLY VIEWS: </p>
-                                                    <span>{{ $video[0]->monthly_views }} </span>
-                                                    <span class="text-success earning-border">{{ $video[1]['basedOnMonthlyViews'] }}</span>
+                                                    <p class="col-description">
+                                                        @switch($tracking)
+                                                            @case('daily')
+                                                                VIEWS TODAY:
+                                                                @break
+                                                            @case('average')
+                                                                VIEWS (last YEAR):
+                                                                @break
+                                                            @default
+                                                                VIEWS/MONTH:
+                                                        @endswitch
+                                                    </p>
+                                                    @switch($tracking)
+                                                        @case('daily')
+                                                            <span>{{ $video['video_data']['daily']['calculatedViews']['todayViews'] }} </span>
+                                                            <span class="text-success earning-border">{{ $video['video_data']['daily']['calculatedEarnings']['todayViews'] }}</span>
+                                                            @break
+                                                        @case('average')
+                                                            <span>{{ $video['video_data']['average']['calculatedViews']['lastYearViews'] }} </span>
+                                                            <span class="text-success earning-border">{{ $video['video_data']['average']['calculatedEarnings']['lastYearViews'] }}</span>
+                                                            @break
+                                                        @default
+                                                            <span>{{ $video['video_data']['total']['calculatedViews']['monthlyViews'] }} </span>
+                                                            <span class="text-success earning-border">{{ $video['video_data']['total']['calculatedEarnings']['monthlyViews'] }}</span>
+                                                    @endswitch
                                                 </div>
                                                 <div class="col">
                                                     <p class="col-description">TRESHOLD: </p>
-                                                    <span class="text-danger">{{ $video[0]->views - $video[0]->treshold_views }}</span>
+                                                    <span class="text-danger">{{ $video['video_data']['total']['calculatedViews']['views'] - $video['tracked_zero'] }}</span>
                                                     <p class="slash">/</p>
-                                                    <span>{{ $video[0]->treshold }}</span>
+                                                    <span>{{ $video['treshold'] }}</span>
                                                 </div>
                                                 <div class="col last-row">
-                                                    <button class="btn-custom btn-custom-secondary info-hover {{ ($video[0]->note !== null) ? 'btn-custom-success' : '' }}" data-toggle="tooltip" data-history="{{ $video[2] }}" data-placement="bottom" title="{{ $video[0]->note }}">
+                                                    <button class="btn-custom btn-custom-secondary info-hover {{ ($video['note'] !== null) ? 'btn-custom-success' : '' }}" data-toggle="tooltip" data-history="{{ $video['history'] }}" data-placement="bottom" title="{{ $video['note'] }}">
                                                         Info
                                                     </button>
                                                     <button class="btn-custom btn-custom-secondary video-settings">Settings</button>

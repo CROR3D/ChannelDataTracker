@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateDailyTrackerTable extends Migration
+class CreateVideoDailyTracker extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,8 @@ class CreateDailyTrackerTable extends Migration
      */
     public function up()
     {
-        Schema::create('daily_tracker', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->string('channel_id');
+        Schema::create('video_daily_tracker', function (Blueprint $table) {
+            $table->string('video_id');
             $table->string('day1')->nullable();
             $table->string('day2')->nullable();
             $table->string('day3')->nullable();
@@ -58,6 +57,6 @@ class CreateDailyTrackerTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('daily_tracker');
+        Schema::dropIfExists('video_daily_tracker');
     }
 }

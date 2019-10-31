@@ -14,9 +14,8 @@ class CreateHistoryTable extends Migration
     public function up()
     {
         Schema::create('history', function (Blueprint $table) {
-            $table->bigIncrements('id');
             $table->string('video_id');
-            $table->integer('tresholds_reached');
+            $table->integer('tresholds_reached')->default(0);
             $table->string('january')->nullable();
             $table->string('february')->nullable();
             $table->string('march')->nullable();

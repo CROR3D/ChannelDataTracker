@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -29,11 +29,11 @@ class Channel extends Model
 
     public function videos()
     {
-        return $this->hasMany('App\Video');
+        return $this->hasMany('App\Models\Video');
     }
 
-    public function dailyTracker()
+    public function channelDailyTracker()
     {
-        return $this->hasOne('App\DailyTracker');
+        return $this->hasOne('App\Models\ChannelDailyTracker');
     }
 }

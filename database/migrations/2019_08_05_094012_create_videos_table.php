@@ -17,18 +17,12 @@ class CreateVideosTable extends Migration
             $table->string('id')->primary();
             $table->string('channel_id');
             $table->string('name');
-            $table->integer('views');
             $table->integer('tracked_zero');
+            $table->integer('month_zero');
             $table->float('earning_factor', 8, 2);
             $table->string('factor_currency');
-            $table->integer('monthly_views')->nullable();
-            $table->integer('treshold_views');
             $table->integer('treshold');
-            $table->integer('likes');
-            $table->integer('dislikes');
-            $table->integer('comments');
             $table->string('note')->nullable();
-            $table->string('privacy');
             $table->timestamps();
         });
     }

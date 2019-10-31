@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -12,18 +12,12 @@ class Video extends Model
         'id',
         'channel_id',
         'name',
-        'views',
         'tracked_zero',
+        'month_zero',
         'earning_factor',
         'factor_currency',
-        'monthly_views',
-        'treshold_views',
         'treshold',
-        'likes',
-        'dislikes',
-        'comments',
-        'note',
-        'privacy'
+        'note'
     ];
 
     public function saveVideo($video)
@@ -38,11 +32,16 @@ class Video extends Model
 
     public function channel()
     {
-        return $this->belongsTo('App\Channel');
+        return $this->belongsTo('App\Models\Channel');
     }
 
     public function history()
     {
-        return $this->hasOne('App\History');
+        return $this->hasOne('App\Models\History');
+    }
+
+    public function videoDailyTracker()
+    {
+        return $this->hasOne('App\Models\VideoDailyTracker');
     }
 }
