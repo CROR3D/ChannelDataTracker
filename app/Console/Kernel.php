@@ -24,6 +24,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
+        $schedule->command('command:storevideohistory')
+                 ->monthlyOn(1, '00:00');
+        $schedule->command('command:trackvideos')
+                 ->dailyAt('00:00');
         $schedule->command('command:trackchannels')
                  ->dailyAt('00:00');
     }

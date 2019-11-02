@@ -4,25 +4,25 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use ScheduleHelper;
-use App\Models\Channel;
-use App\Models\ChannelDailyTracker;
+use App\Models\Video;
+use App\Models\VideoDailyTracker;
 use Carbon\Carbon;
 
-class TrackChannels extends Command
+class TrackVideos extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'command:trackchannels';
+    protected $signature = 'command:trackvideos';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Store channel daily data in database';
+    protected $description = 'Store video daily data in database';
 
     /**
      * Create a new command instance.
@@ -41,12 +41,12 @@ class TrackChannels extends Command
      */
     public function handle()
     {
-        $channels = ScheduleHelper::getChannelsData();
+        $videos = ScheduleHelper::getVideosData();
 
-        foreach ($channels as $channel) {
-            $data = $channel->items[0];
-            $channelId = $data->id;
-            $channelDailyTracker = ChannelDailyTracker::where('channel_id', $channelId)->first();
+        foreach ($videos as $video) {
+            $data = $video->items[0];
+            $videoId = $data->id;
+            $videoDailyTracker = VideoDailyTracker::where('video_id', $videoId)->first();
             $today = Carbon::now();
             $day = $today->day;
 
@@ -60,13 +60,12 @@ class TrackChannels extends Command
 
             $updateData = [
                 $dataDay => [
-                    'subs' => $data->statistics->subscriberCount,
-                    'videos' => $data->statistics->videoCount,
-                    'views' => $data->statistics->viewCount
+                    'views' => $data->statistics->viewCount,
+                    'earned' => 0
                 ]
             ];
 
-            $channelDailyTracker->updateChannelDailyTracker($updateData);
+            $videoDailyTracker->updateVideoDailyTracker($updateData);
         }
     }
 }

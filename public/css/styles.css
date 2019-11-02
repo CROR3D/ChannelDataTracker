@@ -7,6 +7,10 @@ label,
     display: block;
 }
 
+.validation-error {
+    opacity: 0;
+}
+
 .link {
     color: #efefef;
 }
@@ -94,6 +98,7 @@ label,
     bottom: 0;
     left: 0;
     right: 0;
+    z-index: 100;
     margin: auto;
     width: 100%;
     height: 100%;
@@ -133,14 +138,11 @@ label,
 #video-info-form-wrapper,
 #video-settings-form-wrapper {
     width: 400px;
-    height: 580px;
+    height: 560px;
 }
 
 #factor_currency,
-#factor_currency_video {
-    cursor: pointer;
-}
-
+#factor_currency_video,
 .close-btn:hover {
     cursor: pointer;
 }
@@ -210,8 +212,11 @@ label,
     display: none;
     width: 100%;
     margin-left: 0 !important;
-    margin-bottom: 25px;
     padding: 0 15px;
+}
+
+.channel-data .element-border {
+    margin-bottom: 15px !important;
 }
 
 .col-description {
@@ -219,21 +224,8 @@ label,
     color: #6c757d;
 }
 
-.tracking-btn {
-    margin: 0 15px;
-    padding: 7px 0;
-    text-align: center;
-    background-color: #fff;
-    border: 1px solid rgb(50, 50, 50);
-    border-radius: 5px;
-}
-
-.tracking-btn:hover {
-    cursor: pointer;
-}
-
 .tracking-selected {
-    color: rgb(20, 20, 20);
+    color: #dc3545;
 }
 
 .monthly-highlight div {
@@ -281,6 +273,19 @@ label,
     border-radius: 5px;
     background-color: transparent;
     color: #aaa;
+}
+
+.tracking-btn {
+    margin: 0 15px;
+    padding: 7px 0;
+    text-align: center;
+    background-color: #fff;
+    border: 1px solid rgb(50, 50, 50);
+    border-radius: 5px;
+}
+
+.tracking-btn:hover {
+    cursor: pointer;
 }
 
 .last-row {
@@ -429,6 +434,27 @@ input[type=radio] {
     .jumbotron {
         border-style: none;
         border-radius: 0;
+    }
+
+    #channel-settings-form-wrapper {
+        height: 500px;
+    }
+
+    #video-settings-form-wrapper {
+        height: 605px;
+    }
+
+    #channelSettingsEarningFactor,
+    #videoSettingsEarningFactor {
+        margin-bottom: 5px;
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    #channelSettingsFactorCurrency,
+    #videoSettingsFactorCurrency {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
     }
 
     .channel,
@@ -584,5 +610,11 @@ input[type=radio] {
 
     .video-row .col span {
         display: block;
+    }
+}
+
+@media only screen and (max-width: 327px) {
+    #channel-settings-form-wrapper {
+        height: 540px;
     }
 }

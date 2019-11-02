@@ -9,7 +9,9 @@ $(document).ready(function() {
     dropdownChannel();
     caclulateReachedTresholds();
     enableTooltips();
-    document.getElementById('videoSettingsAddOrUpdate').addEventListener('click', validateVideoForm);
+    trackingButtons();
+    updateValidation();
+    deleteSafetyCountdown();
 });
 
 function removeNotifications() {
@@ -25,6 +27,16 @@ function enableTooltips() {
 
 function clearChannels() {
     document.getElementById('list-channels').innerHTML = ``;
+}
+
+function updateValidation() {
+    document.getElementById('channelSettingsUpdate').addEventListener('click', validateChannelForm);
+    document.getElementById('videoSettingsAddOrUpdate').addEventListener('click', validateVideoForm);
+}
+
+function deleteSafetyCountdown() {
+    document.getElementById('videoSettingsDelete').addEventListener('click', deleteCountdown);
+    document.getElementById('channelSettingsDelete').addEventListener('click', deleteCountdown);
 }
 
 function popUpChannelForm() {
@@ -120,6 +132,32 @@ function popUpVideoForm() {
     });
 }
 
+function deleteCountdown(e) {
+    if(e.target.classList.contains('safety-countdown')) {
+        return true;
+    } else {
+        e.preventDefault();
+        let innerText = $(e.target).text();
+        $(e.target).prop('disabled', true);
+        let timeleft = 4;
+        let downloadTimer = setInterval(function(){
+            timeleft--;
+            $(e.target).text(timeleft);
+            if(timeleft < 0) {
+                clearInterval(downloadTimer);
+                $(e.target).text('Are you sure?');
+                e.target.classList.add('safety-countdown');
+                $(e.target).prop('disabled', false);
+                setTimeout(function() {
+                    e.target.classList.remove('safety-countdown');
+                    $(e.target).text(innerText);
+                }, 3000);
+            }
+        }, 1000);
+        return false;
+    }
+}
+
 function closePopUp() {
     let elements = document.querySelectorAll('.channel-title');
     $(document).on('click', '.close-btn', function(e) {
@@ -142,7 +180,7 @@ function changeResultCount() {
 }
 
 function dropdownChannel() {
-    $(document).on('click', '.channel', function() {
+    $(document).on('click', '.channel', function(e) {
         $(this).next('.channel-data').slideToggle('slow');
     });
 }
@@ -161,8 +199,8 @@ function caclulateReachedTresholds() {
 
             for(let x = 0; x < videoData.length; x++) {
                 if(videoData[x].classList.contains('video-row')) {
-                    let currentTresholdViews = parseFloat(videoData[x].children[3].firstElementChild.innerText),
-                        totalTresholdViews = parseFloat(videoData[x].children[3].lastElementChild.innerText);
+                    let currentTresholdViews = parseFloat(videoData[x].children[3].getElementsByTagName('span')[0].innerText),
+                        totalTresholdViews = parseFloat(videoData[x].children[3].getElementsByTagName('span')[1].innerText);
 
                     totalTreshold++;
 
@@ -183,8 +221,30 @@ function caclulateReachedTresholds() {
     }
 }
 
+function trackingButtons() {
+    $(document).on('click', '.tracking-btn', function(e) {
+        e.preventDefault();
+        let trackingHidden = document.getElementById('channelSettingsTracking');
+        $('.tracking-btn').removeClass("tracking-selected");
+        e.target.classList.add('tracking-selected');
+        trackingHidden.value = e.target.value;
+    });
+}
+
 function channelDataUpdate(button) {
-    let data = JSON.parse(button.dataset.channel);
+    let data = JSON.parse(button.dataset.channel),
+        title = document.getElementById('channelSettingsTitle'),
+        trackingButtons = document.getElementsByClassName('tracking-btn'),
+        trackingHidden = document.getElementById('channelSettingsTracking');
+
+    $('.tracking-btn').removeClass("tracking-selected");
+    title.value = data.name;
+    for(var i = 0; i < trackingButtons.length; i++) {
+        if((trackingButtons[i].innerText.charAt(0).toLowerCase() + trackingButtons[i].innerText.slice(1)) === data.tracking) {
+            trackingButtons[i].classList.add('tracking-selected');
+        }
+    }
+    trackingHidden.value = data.tracking;
 }
 
 function videoDataUpdate(button) {
@@ -222,38 +282,54 @@ function clearVideoData() {
     hiddenId.value = '';
 }
 
+function validateChannelForm(e) {
+    let channelTitle = document.forms['channelSettingsForm']['channelSettingsTitle'].value,
+        isValid = true;
+
+    if (channelTitle === "" || typeof channelTitle !== 'string') {
+        let titleError = document.getElementById('channelTitleError');
+        $(titleError).css({ 'opacity': 1 });
+        $('#channelSettingsTitle').css({ "border": "1px solid #a94442" });
+        clearErrors();
+        isValid = false;
+    }
+
+    if(!isValid) e.preventDefault();
+
+    return isValid;
+}
+
 function validateVideoForm(e) {
-    let videoForm = document.getElementById('videoSettingsForm'),
-        videoTitle = document.forms['videoSettingsForm']['videoSettingsTitle'].value,
+    let videoTitle = document.forms['videoSettingsForm']['videoSettingsTitle'].value,
         videoSettingsEarningFactor = parseFloat(document.forms['videoSettingsForm']['videoSettingsEarningFactor'].value),
         videoSettingsFactorCurrency = document.forms['videoSettingsForm']['videoSettingsFactorCurrency'].value,
         videoSettingsTreshold = parseInt(document.forms['videoSettingsForm']['videoSettingsTreshold'].value);
 
-    let isValid = true;
+    let isValid = true,
+        formType = $('#videoSettingsAddOrUpdate').attr('name');
 
-    if (videoTitle === "" || typeof videoTitle !== 'string') {
-        let titleError = document.getElementById('videoTitleError');
-        titleError.textContent = '- Name is required!';
-        clearErrors();
-        isValid = false;
+    if(formType === 'videoSettingsUpdate') {
+        if (videoTitle === "" || typeof videoTitle !== 'string') {
+            let titleError = document.getElementById('videoTitleError');
+            $(titleError).css({ 'opacity': 1 });
+            $('#videoSettingsTitle').css({ "border": "1px solid #a94442" });
+            clearErrors();
+            isValid = false;
+        }
     }
 
-    if (videoSettingsEarningFactor < 0 || typeof videoSettingsEarningFactor !== 'number') {
+    if (isNaN(videoSettingsEarningFactor) || videoSettingsEarningFactor <= 0 || typeof videoSettingsEarningFactor !== 'number') {
         let earningFactorError = document.getElementById('earningFactorError');
-        earningFactorError.textContent = '- Earning factor is not valid!';
+        $(earningFactorError).css({ 'opacity': 1 });
+        $('#videoSettingsEarningFactor').css({ "border": "1px solid #a94442" });
         clearErrors();
         isValid = false;
     }
 
-    if (!['HRK', 'USD', 'EUR'].includes(videoSettingsFactorCurrency)) {
-        earningFactorError.textContent = '- Factor currency is not valid!';
-        clearErrors();
-        isValid = false;
-    }
-
-    if (videoSettingsTreshold < 0 || typeof videoSettingsTreshold !== 'number') {
+    if (isNaN(videoSettingsTreshold) || videoSettingsTreshold < 0 || typeof videoSettingsTreshold !== 'number') {
         let videoTresholdError = document.getElementById('videoTresholdError');
-        videoTresholdError.textContent = '- Treshold is not defined properly!';
+        $(videoTresholdError).css({ 'opacity': 1 });
+        $('#videoSettingsTreshold').css({ "border": "1px solid #a94442" });
         clearErrors();
         isValid = false;
     }
@@ -265,13 +341,14 @@ function validateVideoForm(e) {
 
 function clearErrors(clearMode) {
     if(clearMode === 'quick') {
-        $('.validation-error').text('');
+        $('.validation-error').css({ 'opacity': 0 });
+        $('.app-form-input').css({ "border": "1px solid #ced4da" });
     } else {
-        setTimeout(function(){
-            $('.validation-error').text('');
+        setTimeout(function() {
+            $('.validation-error').css({ 'opacity': 0 });
+            $('.app-form-input').css({ "border": "1px solid #ced4da" });
         }, 5000);
     }
-
 }
 
 function displayHistory(history) {

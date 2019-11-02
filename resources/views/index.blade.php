@@ -78,7 +78,7 @@
                         @foreach($data as $channel)
                             <?php $tracking = $channel['tracking'] ?>
                             <div class="row channel text-center py-3">
-                                <div class="col hvr-wobble-horizontal channel-title">{{ $channel['name'] }}</div>
+                                <div class="col hvr-wobble-horizontal channel-title">{{ str_limit($channel['name'], $limit = 37, $end = ' ...') }}</div>
                                 <div class="col">
                                     <p class="col-description">SUBS: </p>
                                     @switch($tracking)
@@ -138,7 +138,7 @@
                                                     VIEWS YESTERDAY
                                                     @break
                                                 @case('average')
-                                                    VIEWS (last MONTH)
+                                                    VIEWS (avg last MONTH)
                                                     @break
                                                 @default
                                                     VIEWS
@@ -150,7 +150,7 @@
                                                     VIEWS TODAY
                                                     @break
                                                 @case('average')
-                                                    VIEWS (last YEAR)
+                                                    VIEWS (avg last YEAR)
                                                     @break
                                                 @default
                                                     VIEWS/MONTH
@@ -173,8 +173,8 @@
                                                     <span class="text-success earning-border">{{ $channel['channel_calculation']['average']['calculatedMonthViews']['earning'] }}</span>
                                                     @break
                                                 @default
-                                                    <span>{{ $channel['channel_calculation']['total']['caluculatedViews']['views'] }}</span>
-                                                    <span class="text-success earning-border">{{ $channel['channel_calculation']['total']['caluculatedViews']['earning'] }}</span>
+                                                    <span>{{ $channel['channel_calculation']['total']['calculatedViews']['views'] }}</span>
+                                                    <span class="text-success earning-border">{{ $channel['channel_calculation']['total']['calculatedViews']['earning'] }}</span>
                                             @endswitch
                                         </div>
                                         <div class="col">
@@ -188,8 +188,8 @@
                                                     <span class="text-success earning-border">{{ $channel['channel_calculation']['average']['calculatedYearViews']['earning'] }}</span>
                                                     @break
                                                 @default
-                                                    <span>{{ $channel['channel_calculation']['total']['caluculatedMonthlyViews']['views'] }}</span>
-                                                    <span class="text-success earning-border">{{ $channel['channel_calculation']['total']['caluculatedMonthlyViews']['earning'] }}</span>
+                                                    <span>{{ $channel['channel_calculation']['total']['calculatedMonthlyViews']['monthlyViews'] }}</span>
+                                                    <span class="text-success earning-border">{{ $channel['channel_calculation']['total']['calculatedMonthlyViews']['earning'] }}</span>
                                             @endswitch
                                         </div>
                                         <div class="col"></div>
@@ -206,7 +206,7 @@
                                                                 VIEWS YESTERDAY:
                                                                 @break
                                                             @case('average')
-                                                                VIEWS (last MONTH):
+                                                                VIEWS (avg last MONTH):
                                                                 @break
                                                             @default
                                                                 VIEWS:
@@ -233,7 +233,7 @@
                                                                 VIEWS TODAY:
                                                                 @break
                                                             @case('average')
-                                                                VIEWS (last YEAR):
+                                                                VIEWS (avg last YEAR):
                                                                 @break
                                                             @default
                                                                 VIEWS/MONTH:
@@ -255,12 +255,12 @@
                                                 </div>
                                                 <div class="col">
                                                     <p class="col-description">TRESHOLD: </p>
-                                                    <span class="text-danger">{{ $video['video_data']['total']['calculatedViews']['views'] - $video['tracked_zero'] }}</span>
+                                                    <span class="{{ ($video['video_data']['total']['calculatedViews']['views'] - $video['tracked_zero'] < $video['treshold']) ? 'text-danger' : 'text-success' }}">{{ $video['video_data']['total']['calculatedViews']['views'] - $video['tracked_zero'] }}</span>
                                                     <p class="slash">/</p>
                                                     <span>{{ $video['treshold'] }}</span>
                                                 </div>
                                                 <div class="col last-row">
-                                                    <button class="btn-custom btn-custom-secondary info-hover {{ ($video['note'] !== null) ? 'btn-custom-success' : '' }}" data-toggle="tooltip" data-history="{{ $video['history'] }}" data-placement="bottom" title="{{ $video['note'] }}">
+                                                    <button class="btn-custom btn-custom-secondary info-hover {{ ($video['note'] !== null) ? 'text-custom-success' : '' }}" data-toggle="tooltip" data-history="{{ $video['history'] }}" data-placement="bottom" title="{{ $video['note'] }}">
                                                         Info
                                                     </button>
                                                     <button class="btn-custom btn-custom-secondary video-settings">Settings</button>

@@ -43,12 +43,25 @@ class ChannelController extends Controller
 
             case $request->has('channelSettingsUpdate'):
                 $channelId = $request->channelSettingsChannelId;
+
                 $channelData = [
                     'title' => $request->channelSettingsTitle,
-                    'tracking' => 'total',
-                    'earning_factor' => $request->channelSettingsEarningFactor,
-                    'factor_currency' => $request->channelSettingsFactorCurrency
+                    'tracking' => $request->channelSettingsTracking
                 ];
+
+                if($request->channelSettingsEarningFactor) {
+                    $allVideoData = [
+                        'earning_factor' => $request->channelSettingsEarningFactor,
+                        'factor_currency' => $request->channelSettingsFactorCurrency
+                    ];
+
+                    $allChannelVideos = Video::where('channel_id', $channelId)->get();
+
+                    foreach ($allChannelVideos as $video) {
+                        $this->updateTrackedVideo($video->id, $allVideoData);
+                    }
+                }
+
                 $this->updateChannel($channelId, $channelData);
                 break;
 
@@ -161,10 +174,7 @@ class ChannelController extends Controller
 
         $channel = [
             'id' => $channelId,
-            'name' => $data->snippet->title,
-            'subs' => $data->statistics->subscriberCount,
-            'videos' => $data->statistics->videoCount,
-            'views' => $data->statistics->viewCount
+            'name' => $data->snippet->title
         ];
 
         $dailyData = [
@@ -172,9 +182,9 @@ class ChannelController extends Controller
         ];
 
         $dailyData['day' . $day] = [
-            'subs' => $channel['subs'],
-            'videos' => $channel['videos'],
-            'views' => $channel['views']
+            'subs' => $data->statistics->subscriberCount,
+            'videos' => $data->statistics->videoCount,
+            'views' => $data->statistics->viewCount
         ];
 
         $newChannel = new Channel;
@@ -427,8 +437,14 @@ class ChannelController extends Controller
 
                 $channelVideo['video_data']['average']['calculatedViews']['lastMonthViews'] = $this->calculateAverage($videoMonthData, $channelVideo['tracked_zero'], 'views');
                 $channelVideo['video_data']['average']['calculatedViews']['lastYearViews'] = $this->calculateAverage($videoYearData, $channelVideo['tracked_zero'], 'views');
-                $channelVideo['video_data']['average']['calculatedEarnings']['lastMonthViews'] = $this->calculateAverage($videoMonthData, null, 'earnings');
-                $channelVideo['video_data']['average']['calculatedEarnings']['lastYearViews'] = $this->calculateAverage($videoYearData, null, 'earnings');
+                $channelVideo['video_data']['average']['calculatedEarnings']['lastMonthViews'] = $this->addCurrency(
+                                                                                                    $this->exchangeCurrency($channelVideo['factor_currency'], $currencyExchange, $this->calculateAverage($videoMonthData, null, 'earnings')),
+                                                                                                    $channelVideo['factor_currency']
+                                                                                                 );
+                $channelVideo['video_data']['average']['calculatedEarnings']['lastYearViews'] = $this->addCurrency(
+                                                                                                    $this->exchangeCurrency($channelVideo['factor_currency'], $currencyExchange, $this->calculateAverage($videoYearData, null, 'earnings')),
+                                                                                                    $channelVideo['factor_currency']
+                                                                                                 );
 
                 $history = History::where('video_id', $channelVideo['id'])->first();
                 $channelVideo['history'] = $history;
@@ -477,7 +493,7 @@ class ChannelController extends Controller
 
             $data = array_merge($data, $channelData);
         }
-
+        
         return $data;
     }
 
@@ -536,7 +552,11 @@ class ChannelController extends Controller
         $channel = Channel::find($id);
         $videos = Video::where('channel_id', $id)->get();
         foreach($videos as $video) {
+            $videoDailyData = VideoDailyTracker::where('video_id', $video->id)->first();
+            $videoHistory = History::where('video_id', $video->id)->first();
             $video->delete();
+            $dailyData->delete();
+            $videoHistory->delete();
         }
         $channel->delete();
     }
@@ -610,6 +630,7 @@ class ChannelController extends Controller
     {
         $sum = 0;
         $count = 0;
+        $areViews = $type === 'views';
 
         foreach ($array as $value) {
             if(gettype($value) === 'string') {
@@ -621,10 +642,10 @@ class ChannelController extends Controller
                 $arrayEarned = $value['earned'];
             }
 
-            if($type === 'views' && !is_null($value) && $trackedZero) {
+            if($areViews && !is_null($value) && $trackedZero) {
                 $number = $arrayViews - $trackedZero;
                 $count++;
-            } elseif($type === 'earnings' && !is_null($value)) {
+            } elseif(!$areViews && !is_null($value)) {
                 $number = $arrayEarned;
                 $count++;
             } else {
@@ -634,9 +655,15 @@ class ChannelController extends Controller
 
         $sum += $number;
 
-        if($count === 0) return 0;
+        if($count === 0) {
+            if($areViews) {
+                return 0;
+            } else {
+                return number_format(0, 2);
+            }
+        }
 
-        if($type === 'views') {
+        if($areViews) {
             return $sum / $count;
         } else {
             return number_format($sum / $count, 2);

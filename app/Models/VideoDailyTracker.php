@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class VideoDailyTracker extends Model
 {
     protected $table = 'video_daily_tracker';
+    protected $primaryKey = 'video_id';
 
     public $incrementing = false;
 

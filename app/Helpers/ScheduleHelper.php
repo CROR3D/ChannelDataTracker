@@ -5,6 +5,7 @@ namespace App\Helpers;
 use Config;
 use GuzzleHttp\Client;
 use App\Models\Channel;
+use App\Models\Video;
 
 class ScheduleHelper
 {
@@ -14,7 +15,19 @@ class ScheduleHelper
         $data = [];
 
         foreach ($channels as $channel) {
-            array_push($data, $this->getCurrentChannelData($channel->id));
+            array_push($data, $this->getChannelData($channel->id));
+        }
+
+        return $data;
+    }
+
+    public function getVideosData()
+    {
+        $videos = Video::all();
+        $data = [];
+
+        foreach ($videos as $video) {
+            array_push($data, $this->getVideoData($video->id));
         }
 
         return $data;

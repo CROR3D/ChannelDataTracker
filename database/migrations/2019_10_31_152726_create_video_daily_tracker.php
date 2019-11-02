@@ -14,7 +14,7 @@ class CreateVideoDailyTracker extends Migration
     public function up()
     {
         Schema::create('video_daily_tracker', function (Blueprint $table) {
-            $table->string('video_id');
+            $table->string('video_id')->unique();
             $table->string('day1')->nullable();
             $table->string('day2')->nullable();
             $table->string('day3')->nullable();
@@ -47,6 +47,8 @@ class CreateVideoDailyTracker extends Migration
             $table->string('day30')->nullable();
             $table->string('day31')->nullable();
             $table->timestamps();
+
+            $table->foreign('video_id')->references('id')->on('videos')->onDelete('cascade');
         });
     }
 

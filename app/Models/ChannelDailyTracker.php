@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class ChannelDailyTracker extends Model
 {
     protected $table = 'channel_daily_tracker';
+    protected $primaryKey = 'channel_id';
 
     public $incrementing = false;
 

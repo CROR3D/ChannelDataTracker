@@ -4,6 +4,9 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\Video;
+use App\Models\VideoDailyTracker;
+use App\Models\History;
+use Carbon\Carbon;
 
 class StoreVideoHistory extends Command
 {
@@ -39,9 +42,33 @@ class StoreVideoHistory extends Command
     public function handle()
     {
         $videos = Video::all();
+        $today = Carbon::now();
+        $lastMonth = lcfirst($today->subMonth()->format('F'));
 
         foreach ($videos as $video) {
+            $videoMonthData = VideoDailyTracker::where('video_id', $video->id)->first();
+            $videoMonthData = $videoMonthData->getAttributes();
+            $videoMonthData = array_slice($videoMonthData, 1, -2);
 
+            $totalViews = 0;
+            $totalEarned = 0;
+
+            foreach ($videoMonthData as $day) {
+                $day = json_decode($day);
+                if($day) {
+                    $totalViews += $day->views;
+                    $totalEarned += $day->earned;
+                }
+            }
+
+            $historyData[$lastMonth] = [
+                'views' => $totalViews,
+                'earned' => $totalEarned
+            ];
+
+            $history = History::where('video_id', $video->id)->first();
+            // FIX ID UPDATE PROBLEM
+            $history->updateHistory($historyData);
         }
     }
 }

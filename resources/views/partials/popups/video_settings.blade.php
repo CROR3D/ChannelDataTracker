@@ -8,13 +8,12 @@
             <form id="videoSettingsForm" class="form mb-4 p-0" name="videoSettingsForm" method="post" action="{{ route('channels') }}">
                 <div class="form-group text-left">
                     <label>Change title</label>
-                    <label id="videoTitleError" class="validation-error text-danger"></label>
-                    <input id="videoSettingsTitle" class="form-control mb-3" name="videoSettingsTitle" type="text" value="">
+                    <input id="videoSettingsTitle" class="form-control app-form-input" name="videoSettingsTitle" type="text" value="">
+                    <label id="videoTitleError" class="validation-error text-danger">Title is required!</label>
                     <label>Earning factor per 1000 views</label>
-                    <label id="earningFactorError" class="validation-error text-danger"></label>
                     <div class="row">
                         <div class="col-md-8">
-                            <input id="videoSettingsEarningFactor" class="form-control mb-3" name="videoSettingsEarningFactor" type="text" value="">
+                            <input id="videoSettingsEarningFactor" class="form-control app-form-input" name="videoSettingsEarningFactor" type="text" value="">
                         </div>
                         <div class="col-md-4">
                             <select id="videoSettingsFactorCurrency" class="form-control" name="videoSettingsFactorCurrency">
@@ -24,9 +23,10 @@
                             </select>
                         </div>
                     </div>
+                    <label id="earningFactorError" class="validation-error text-danger">Earning factor is not valid!</label>
                     <label>Get notified when video exceeds view limit</label>
-                    <label id="videoTresholdError" class="validation-error text-danger"></label>
-                    <input id="videoSettingsTreshold" class="form-control mb-3" name="videoSettingsTreshold" type="text" value="">
+                    <input id="videoSettingsTreshold" class="form-control app-form-input" name="videoSettingsTreshold" type="text" value="">
+                    <label id="videoTresholdError" class="validation-error text-danger">Treshold is not defined properly!</label>
                     <label>Message related to this video</label>
                     <input id="videoSettingsNote" class="form-control mb-5" name="videoSettingsNote" type="text" value="">
                     <div class="row">

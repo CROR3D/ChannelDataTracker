@@ -14,7 +14,7 @@ class CreateChannelDailyTracker extends Migration
     public function up()
     {
         Schema::create('channel_daily_tracker', function (Blueprint $table) {
-            $table->string('channel_id');
+            $table->string('channel_id')->unique();
             $table->string('day1')->nullable();
             $table->string('day2')->nullable();
             $table->string('day3')->nullable();
@@ -47,6 +47,8 @@ class CreateChannelDailyTracker extends Migration
             $table->string('day30')->nullable();
             $table->string('day31')->nullable();
             $table->timestamps();
+
+            $table->foreign('channel_id')->references('id')->on('channels')->onDelete('cascade');
         });
     }
 
