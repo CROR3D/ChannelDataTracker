@@ -13,7 +13,9 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        //
+        App\Console\Commands\StoreVideoHistory::class,
+        App\Console\Commands\TrackChannels::class,
+        App\Console\Commands\TrackVideos::class,
     ];
 
     /**

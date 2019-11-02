@@ -47,6 +47,7 @@ function popUpChannelForm() {
             el.classList.remove('hvr-wobble-horizontal');
         });
         $('#add_channel_popup').show();
+        $('.container-wrapper').css('overflowY','hidden');
     });
 }
 
@@ -61,6 +62,7 @@ function popUpChannelSettingsForm() {
             el.classList.remove('hvr-wobble-horizontal');
         });
         $('#channel_settings_popup').show();
+        $('.container-wrapper').css('overflowY','hidden');
     });
 }
 
@@ -79,6 +81,7 @@ function popUpVideoHistory() {
 
         displayHistory(history);
         $('#video_info_popup').show();
+        $('.container-wrapper').css('overflowY','hidden');
     });
 }
 
@@ -104,6 +107,7 @@ function popUpVideoForm() {
                 el.classList.remove('hvr-wobble-horizontal');
             });
             $('#video_settings_popup').show();
+            $('.container-wrapper').css('overflowY','hidden');
         } else {
             $(videoSearch).attr('placeholder', 'Enter video ID');
         }
@@ -129,6 +133,7 @@ function popUpVideoForm() {
             el.classList.remove('hvr-wobble-horizontal');
         });
         $('#video_settings_popup').show();
+        $('.container-wrapper').css('overflowY','hidden');
     });
 }
 
@@ -140,11 +145,11 @@ function deleteCountdown(e) {
         let innerText = $(e.target).text();
         $(e.target).prop('disabled', true);
         let timeleft = 4;
-        let downloadTimer = setInterval(function(){
+        window.downloadTimer = setInterval(function(){
             timeleft--;
             $(e.target).text(timeleft);
             if(timeleft < 0) {
-                clearInterval(downloadTimer);
+                clearInterval(window.downloadTimer);
                 $(e.target).text('Are you sure?');
                 e.target.classList.add('safety-countdown');
                 $(e.target).prop('disabled', false);
@@ -159,14 +164,30 @@ function deleteCountdown(e) {
 }
 
 function closePopUp() {
-    let elements = document.querySelectorAll('.channel-title');
+    let elements = document.querySelectorAll('.channel-title'),
+        channelDelete = document.getElementById('channelSettingsDelete'),
+        videoDelete = document.getElementById('videoSettingsDelete');
+
     $(document).on('click', '.close-btn', function(e) {
         const parent = e.target.parentNode.parentNode.parentNode;
         [].forEach.call(elements, function(el) {
             el.classList.add('hvr-wobble-horizontal');
         });
         $(parent).hide();
+        $('.container-wrapper').css('overflowY','auto');
         clearVideoData();
+        let isInCountdown = channelDelete.classList.contains('safety-countdown') || videoDelete.classList.contains('safety-countdown'),
+            isDisabled = $(channelDelete).prop('disabled') || $(videoDelete).prop('disabled');
+        if(isInCountdown || isDisabled) {
+            clearInterval(window.downloadTimer);
+            $(channelDelete).prop('disabled', false);
+            channelDelete.classList.remove('safety-countdown');
+            $(channelDelete).text('Delete Channel');
+            $(videoDelete).prop('disabled', false);
+            videoDelete.classList.remove('safety-countdown');
+            $(videoDelete).text('Delete Video');
+        }
+
         clearErrors('quick');
     });
 }
@@ -355,7 +376,17 @@ function displayHistory(history) {
     const videoHistory = document.getElementById('videoHistory'),
           videoTresholdsReached = document.getElementById('tresholdsReached');
 
-    if(!history) {
+    let historyArray = Object.keys(history).map(function(m) {
+        return history[m];
+    });
+
+    historyArray = historyArray.slice(2, -2);
+
+    let isEmpty = historyArray.find(function(m) {
+        return m != null;
+    });
+    
+    if(isEmpty) {
         videoHistory.innerHTML = `No History For This Video`;
         return;
     }
@@ -368,12 +399,14 @@ function displayHistory(history) {
         lastMonthName = months[lastMonthIndex];
 
     videoTresholdsReached.innerHTML = `
-        <h4>Tresholds Reached: ${history.tresholdsReached}</h4>
+        <h4>Tresholds Reached: ${history.tresholds_reached}</h4>
     `;
 
     videoHistory.innerHTML = `
-        <h4 class="text-danger">History</h4>
-        <h4>${lastMonthName}: ${history[lastMonthName]}</h4>
+        <h4><span class="text-danger">${lastMonthName}: </span>
+            <span>${history[lastMonthName].views} views</span>
+            <span class="text-success">${history[lastMonthName].earned}$ earned</span>
+        </h4>
     `;
 
     for(let i = lastMonthIndex - 1; i >= 0; i--) {

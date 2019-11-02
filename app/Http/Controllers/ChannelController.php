@@ -493,7 +493,7 @@ class ChannelController extends Controller
 
             $data = array_merge($data, $channelData);
         }
-        
+
         return $data;
     }
 
@@ -555,7 +555,7 @@ class ChannelController extends Controller
             $videoDailyData = VideoDailyTracker::where('video_id', $video->id)->first();
             $videoHistory = History::where('video_id', $video->id)->first();
             $video->delete();
-            $dailyData->delete();
+            $videoDailyData->delete();
             $videoHistory->delete();
         }
         $channel->delete();
