@@ -1,7 +1,6 @@
 ## YouTube Channel Tracker
 
-<p align="center">Repository website: http://r3d.online</p>
-<p align="center"><img src="https://ibb.co/rwnfWvB"></p>
+Repository website: http://r3d.online
 
 ## About
 
