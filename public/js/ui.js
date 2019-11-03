@@ -385,8 +385,8 @@ function displayHistory(history) {
     let isEmpty = historyArray.find(function(m) {
         return m != null;
     });
-    
-    if(isEmpty) {
+
+    if(isEmpty == null) {
         videoHistory.innerHTML = `No History For This Video`;
         return;
     }

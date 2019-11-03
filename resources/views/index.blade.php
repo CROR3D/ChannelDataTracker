@@ -20,7 +20,7 @@
                 <hr class="my-4">
                 <div id="search-form-wrapper" class="mb-4">
                     <form id="search-form" class="input-group" method="post" action="{{ route('channels') }}">
-                        <input id="search" name="search" type="text" class="form-control" aria-label="Text input with dropdown button">
+                        <input id="search" name="search" type="text" class="form-control" aria-label="Text input with dropdown button" autocomplete="off">
                         <div class="input-group-append mr-4 results">
                             <button id="results" class="btn-custom btn-custom-secondary dropdown-toggle" name="results" type="button"
                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
