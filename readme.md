@@ -11,7 +11,7 @@ Application that tracks channel data, video data and personal video earnings fro
 
 ## Current Status
 
-IN DEVELOPMENT
+IN DEVELOPMENT 4/5
 
 ## ToDo
 
