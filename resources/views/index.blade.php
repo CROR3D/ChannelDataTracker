@@ -34,7 +34,7 @@
                             </div>
                         </div>
                         <input id="maxResults" name="maxResults" value="5" type="hidden">
-                        <button id="searchChannel" class="btn-custom btn-custom-secondary" name="searchBtn" type="submit">Search</button>
+                        <button id="searchChannel" class="btn-custom btn-custom-secondary" name="formName" type="submit" value="SearchForm">Search</button>
                         <input name="_token" value="{{ csrf_token() }}" type="hidden">
                     </form>
                 </div>
@@ -53,10 +53,11 @@
                                     <form method="post" action="{{ route('channels') }}">
                                         <img class="mb-2 channel-img" src="{{ $searchData->items[$i]->snippet->thumbnails->default->url }}" />
                                         <p class="mb-2">{{ str_limit($searchData->items[$i]->snippet->title, $limit = 15, $end = ' ...') }}</p>
-                                        <button class="btn-custom btn-custom-secondary search-channel" type="submit" name="addSearchedChannel" value="{{ $searchData->items[$i]->id->channelId }}">
+                                        <button class="btn-custom btn-custom-secondary search-channel" type="submit" name="formName" value="AddChannelForm">
                                             Add Channel
                                         </button>
                                         <input name="_token" value="{{ csrf_token() }}" type="hidden">
+                                        <input name="addChannelID" value="{{ $searchData->items[$i]->id->channelId }}" type="hidden">
                                     </form>
                                 </div>
                             @endfor

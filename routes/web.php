@@ -13,4 +13,4 @@
 
 Route::get('/', ['as' => 'index', 'uses' => 'ChannelController@index']);
 
-Route::post('/', ['as' => 'channels', 'uses' => 'ChannelController@manageForms']);
+Route::post('/', ['as' => 'channels', 'uses' => 'ChannelController@executeForm']);

@@ -31,7 +31,7 @@
                     <input id="videoSettingsNote" class="form-control mb-5" name="videoSettingsNote" type="text" value="">
                     <div class="row">
                         <div class="col">
-                            <button id="videoSettingsAddOrUpdate" class="btn-custom btn-custom-secondary btn-block" name="" type="submit" value=""></button>
+                            <button id="videoSettingsAddOrUpdate" class="btn-custom btn-custom-secondary btn-block" name="formName" type="submit" value=""></button>
                         </div>
                         <div class="col">
                             <button id="videoSettingsDelete" class="btn-custom btn-custom-danger btn-block" name="videoSettingsDelete" type="submit" value="">Delete Video</button>
@@ -40,6 +40,7 @@
                     <input id="videoSettingsChannelId" name="videoSettingsChannelId" value="" type="hidden">
                 </div>
                 <input name="_token" value="{{ csrf_token() }}" type="hidden">
+                <input id="videoSettingsVideoId" name="videoSettingsVideoId" value="" type="hidden">
             </form>
         </div>
     </div>

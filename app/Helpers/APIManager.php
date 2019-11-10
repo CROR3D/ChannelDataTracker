@@ -7,7 +7,7 @@ use GuzzleHttp\Client;
 use App\Models\Channel;
 use App\Models\Video;
 
-class ScheduleHelper
+class APIManager
 {
     public function getChannelsData()
     {
@@ -31,6 +31,27 @@ class ScheduleHelper
         }
 
         return $data;
+    }
+
+    public function searchChannels($maxResults, $search)
+    {
+        $client = new Client();
+        $response = $client->request('GET',
+            'https://www.googleapis.com/youtube/v3/search',
+            [
+                'headers' => [
+                    'Accept' => 'application/json','Content-type' => 'application/json'
+                ],
+                'query' => [
+                    'part' => 'snippet',
+                    'maxResults' => $maxResults,
+                    'q' => $search,
+                    'type' => 'channel',
+                    'key' => Config::get('values.apiKey')
+                ],
+            ])->getBody();
+
+        return json_decode($response);
     }
 
     public function getChannelData($id)
@@ -65,6 +86,24 @@ class ScheduleHelper
                     'part' => 'snippet,contentDetails,statistics,status',
                     'id' => $id,
                     'key' => Config::get('values.apiKey')
+                ],
+            ])->getBody();
+
+        return json_decode($response);
+    }
+
+    public function searchCurrencyExchangeValues()
+    {
+        $client = new Client();
+        $response = $client->request('GET',
+            'https://api.exchangeratesapi.io/latest',
+            [
+                'headers' => [
+                    'Accept' => 'application/json','Content-type' => 'application/json'
+                ],
+                'query' => [
+                    'base' => 'USD',
+                    'symbols' => 'EUR,HRK'
                 ],
             ])->getBody();
 

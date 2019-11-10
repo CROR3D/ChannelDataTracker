@@ -31,10 +31,10 @@
                     </div>
                     <div class="row">
                         <div class="col">
-                            <button id="channelSettingsUpdate" class="btn-custom btn-custom-secondary btn-block" name="channelSettingsUpdate" type="submit" value="">Update Channel</button>
+                            <button id="channelSettingsUpdate" class="btn-custom btn-custom-secondary btn-block" name="formName" type="submit" value="UpdateChannelForm">Update Channel</button>
                         </div>
                         <div class="col">
-                            <button id="channelSettingsDelete" class="btn-custom btn-custom-danger btn-block" name="channelSettingsDelete" type="submit" value="">Delete Channel</button>
+                            <button id="channelSettingsDelete" class="btn-custom btn-custom-danger btn-block" name="formName" type="submit" value="DeleteChannelForm">Delete Channel</button>
                         </div>
                     </div>
                     <input id="channelSettingsChannelId" name="channelSettingsChannelId" value="" type="hidden">

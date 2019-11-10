@@ -90,17 +90,18 @@ function popUpVideoForm() {
           title = document.getElementById('popup-title'),
           formButton = document.getElementById('videoSettingsAddOrUpdate'),
           formButtonDelete = document.getElementById('videoSettingsDelete'),
-          hiddenId = document.getElementById('videoSettingsChannelId');
+          hiddenVideoId = document.getElementById('videoSettingsVideoId'),
+          hiddenChannelId = document.getElementById('videoSettingsChannelId');
 
     $(document).on('click', '.add-video', function(e) {
         let videoSearch = e.target.previousElementSibling,
             channelId = e.target.value;
 
         if(videoSearch.value !== '') {
-            $(formButton).attr('value', videoSearch.value);
-            $(formButton).attr('name', 'videoSettingsAdd');
+            $(hiddenVideoId).attr('value', videoSearch.value);
+            $(formButton).attr('value', 'AddVideoForm');
             $('#videoSettingsDelete').hide();
-            $(hiddenId).attr('value', channelId);
+            $(hiddenChannelId).attr('value', channelId);
             title.textContent = 'Add Video';
             formButton.textContent = 'Add Video';
             [].forEach.call(elements, function(el) {
@@ -122,10 +123,10 @@ function popUpVideoForm() {
             videoData = JSON.parse(parent.dataset.video);
 
         $('#videoSettingsDelete').show();
+        $(hiddenVideoId).attr('value', videoData.id);
         let videoRow = e.target.parentElement.parentElement;
         videoDataUpdate(videoRow);
-        $(formButton).attr('value', videoData.id);
-        $(formButton).attr('name', 'videoSettingsUpdate');
+        $(formButton).attr('value', 'UpdateVideoForm');
         $(formButtonDelete).attr('value', videoData.id);
         title.textContent = 'Update Video';
         formButton.textContent = 'Update Video';

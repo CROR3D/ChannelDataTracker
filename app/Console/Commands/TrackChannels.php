@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use ScheduleHelper;
+use APIManager;
 use App\Models\Channel;
 use App\Models\ChannelDailyTracker;
 use Carbon\Carbon;
@@ -41,7 +41,7 @@ class TrackChannels extends Command
      */
     public function handle()
     {
-        $channels = ScheduleHelper::getChannelsData();
+        $channels = APIManager::getChannelsData();
 
         foreach ($channels as $channel) {
             $data = $channel->items[0];

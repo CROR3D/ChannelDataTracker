@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use ScheduleHelper;
+use APIManager;
 use App\Models\Video;
 use App\Models\VideoDailyTracker;
 use Carbon\Carbon;
@@ -41,7 +41,7 @@ class TrackVideos extends Command
      */
     public function handle()
     {
-        $videos = ScheduleHelper::getVideosData();
+        $videos = APIManager::getVideosData();
 
         foreach ($videos as $video) {
             $data = $video->items[0];

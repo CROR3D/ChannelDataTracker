@@ -4,11 +4,12 @@ namespace App\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
-class ScheduleHelper extends Facade {
+class APIManager extends Facade
+{
 
     protected static function getFacadeAccessor()
     {
-        return 'schedulehelper';
+        return 'apimanager';
     }
 
 }
