@@ -18,6 +18,8 @@ class DeleteChannelForm extends Form
 
     public function validate()
     {
+        if(is_null($this->data['channelSettingsChannelId'])) return false;
+
         return true;
     }
 
@@ -41,6 +43,8 @@ class DeleteChannelForm extends Form
 
         $channel->delete();
         $channelDailyData->delete();
+
+        $this->setMessage('Channel "' . $channel->name . '" successfully deleted!');
 
         return true;
     }

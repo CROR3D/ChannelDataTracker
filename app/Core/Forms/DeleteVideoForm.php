@@ -14,6 +14,8 @@ class DeleteVideoForm extends Form
 
     public function validate()
     {
+        if(is_null($this->data['videoSettingsVideoId'])) return false;
+
         return true;
     }
 
@@ -24,6 +26,8 @@ class DeleteVideoForm extends Form
         $video = Video::find($videoId);
 
         $video->delete();
+
+        $this->setMessage('Video "' . $video->name . '" successfully deleted!');
 
         return true;
     }

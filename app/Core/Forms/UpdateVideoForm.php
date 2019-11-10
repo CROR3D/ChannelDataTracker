@@ -14,6 +14,13 @@ class UpdateVideoForm extends Form
 
     public function validate()
     {
+        foreach($this->data as $field => $value)
+        {
+            if($field == 'videoSettingsNote') continue;
+
+            if(is_null($value)) return false;
+        }
+
         return true;
     }
 
@@ -31,6 +38,8 @@ class UpdateVideoForm extends Form
 
         $video = Video::find($videoId);
         $video->updateVideo($videoData);
+
+        $this->setMessage('Video "' . $video->name . '" successfully updated!');
 
         return true;
     }

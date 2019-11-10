@@ -15,6 +15,13 @@ class UpdateChannelForm extends Form
 
     public function validate()
     {
+        foreach($this->data as $field => $value)
+        {
+            if($field == 'channelSettingsEarningFactor') continue;
+
+            if(is_null($value)) return false;
+        }
+
         return true;
     }
 
@@ -45,6 +52,8 @@ class UpdateChannelForm extends Form
 
         $channel = Channel::find($channelId);
         $channel->updateChannel($channelData);
+
+        $this->setMessage('Channel "' . $channel->name . '" successfully updated!');
 
         return true;
     }

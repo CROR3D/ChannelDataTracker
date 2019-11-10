@@ -18,6 +18,8 @@ class AddVideoForm extends Form
 
     public function validate()
     {
+        if(is_null($this->data['videoSettingsVideoId']) || is_null($this->data['videoSettingsChannelId'])) return false;
+
         return true;
     }
 
@@ -33,7 +35,7 @@ class AddVideoForm extends Form
 
         if($videoExists)
         {
-            $this->error = 'Video is already tracked!';
+            $this->setMessage('Video is already tracked!');
 
             return false;
         }
@@ -42,7 +44,7 @@ class AddVideoForm extends Form
 
         if($video === null || empty($video->items))
         {
-            $this->error = 'Video not found!';
+            $this->setMessage('Video not found!');
 
             return false;
         }
@@ -51,7 +53,7 @@ class AddVideoForm extends Form
 
         if($videoChannelId !== $channelId)
         {
-            $this->error = 'Video doesn\'t belong to the channel you want to add it to!';
+            $this->setMessage('Video doesn\'t belong to the channel you want to add it to!');
 
             return false;
         }
@@ -88,6 +90,8 @@ class AddVideoForm extends Form
 
         $newVideoHistory = new History;
         $newVideoHistory->saveHistory($historyData);
+
+        $this->setMessage('Video "' . $video['name'] . '" successfully added!');
 
         return true;
     }

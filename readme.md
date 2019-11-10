@@ -2,6 +2,10 @@
 
 Repository website: http://r3d.online
 
+## Leading Branch
+
+reforged
+
 ## About
 
 Application that tracks channel data, video data and personal video earnings from YouTube in 3 modes:
@@ -17,6 +21,7 @@ IN DEVELOPMENT 4/5
 
 - set task scheduling on server (some of the data is invalid until this is set)
 - fix popup alignment on mobile devices
+- fix channel data popping out of parent div
 - check video history spacing
 - add user friendly notifications about tracking mode
 - make 3 levels of app settings (APP, CHANNEL, VIDEO)

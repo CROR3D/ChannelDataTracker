@@ -17,6 +17,8 @@ class AddChannelForm extends Form
 
     public function validate()
     {
+        if(is_null($this->data['addChannelID'])) return false;
+
         return true;
     }
 
@@ -49,6 +51,8 @@ class AddChannelForm extends Form
 
         $newChannelDailyTracker = new ChannelDailyTracker;
         $newChannelDailyTracker->saveChannelDailyTracker($dailyData);
+
+        $this->setMessage('Channel "' . $channel['name'] . '" successfully added!');
 
         return true;
     }

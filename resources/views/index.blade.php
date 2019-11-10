@@ -274,7 +274,9 @@
                                 </div>
                             @endforeach
                         @else
-
+                            <div class="row">
+                                <h4>No channels currently tracked</h4>
+                            </div>
                         @endif
                     </div>
                 </div>

@@ -5,10 +5,10 @@ namespace App\Core\Forms;
 abstract class Form
 {
     protected $data;
-    protected $error;
+    protected $message;
 
-    public function getError() { return $this->error; }
-    public function setError($error) { $this->error = $error; }
+    public function getMessage() { return $this->message; }
+    public function setMessage($message) { $this->message = $message; }
 
     public function __construct($data)
     {

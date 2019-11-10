@@ -14,9 +14,11 @@ class SearchForm extends Form
 
     public function validate()
     {
-        foreach($this->data as $field)
+        foreach($this->data as $field => $value)
         {
-            if(is_null($field)) return false;
+            if($field == 'search') continue;
+
+            if(is_null($value)) return false;
         }
 
         return true;

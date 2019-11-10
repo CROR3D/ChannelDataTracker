@@ -35,11 +35,13 @@ class ChannelController extends Controller
 
             if($submitted)
             {
+                if($message = $form->getMessage()) session()->flash('success', $message);
+
                 return redirect()->route('index')->with(['submitted' => $submitted]);
             }
             else
             {
-                $error = $form->getError();
+                $error = $form->getMessage();
                 session()->flash('error', $error);
             }
         }
