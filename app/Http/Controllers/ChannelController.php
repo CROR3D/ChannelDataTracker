@@ -14,7 +14,7 @@ class ChannelController extends Controller
 
         $searchData = null;
 
-        if(!is_null($submitted)) $searchData = $submitted['searchData'];
+        if(!$submitted) $searchData = $submitted['searchData'];
 
         $pageData = PageData::get();
 

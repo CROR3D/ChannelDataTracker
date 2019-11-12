@@ -127,7 +127,6 @@ function popUpVideoForm() {
         let videoRow = e.target.parentElement.parentElement;
         videoDataUpdate(videoRow);
         $(formButton).attr('value', 'UpdateVideoForm');
-        $(formButtonDelete).attr('value', videoData.id);
         title.textContent = 'Update Video';
         formButton.textContent = 'Update Video';
         [].forEach.call(elements, function(el) {

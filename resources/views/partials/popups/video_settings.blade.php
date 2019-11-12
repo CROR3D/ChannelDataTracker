@@ -34,7 +34,7 @@
                             <button id="videoSettingsAddOrUpdate" class="btn-custom btn-custom-secondary btn-block" name="formName" type="submit" value=""></button>
                         </div>
                         <div class="col">
-                            <button id="videoSettingsDelete" class="btn-custom btn-custom-danger btn-block" name="videoSettingsDelete" type="submit" value="">Delete Video</button>
+                            <button id="videoSettingsDelete" class="btn-custom btn-custom-danger btn-block" name="formName" type="submit" value="DeleteVideoForm">Delete Video</button>
                         </div>
                     </div>
                     <input id="videoSettingsChannelId" name="videoSettingsChannelId" value="" type="hidden">

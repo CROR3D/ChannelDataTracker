@@ -217,6 +217,7 @@ label,
 
 .channel-data {
     display: none;
+    position: relative;
     width: 100%;
     margin-left: 0 !important;
     padding: 0 15px;
@@ -593,10 +594,11 @@ input[type=radio] {
     #channel-form-wrapper {
         width: 100%;
         height: 100%;
-        bottom: 0;
         margin: 0;
         border-style: none;
         border-radius: 0;
+        padding-top: 40px;
+        padding-bottom: 40px;
     }
 }
 
@@ -616,5 +618,15 @@ input[type=radio] {
 
     .video-row .col span {
         display: block;
+    }
+}
+
+@media only screen and (max-height: 700px) {
+    #channel-settings-form-wrapper,
+    #video-info-form-wrapper,
+    #video-settings-form-wrapper,
+    #channel-form-wrapper {
+        max-height: calc(100vh - 20px);
+        overflow-y: auto;
     }
 }

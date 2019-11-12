@@ -35,78 +35,102 @@ class APIManager
 
     public function searchChannels($maxResults, $search)
     {
-        $client = new Client();
-        $response = $client->request('GET',
-            'https://www.googleapis.com/youtube/v3/search',
-            [
-                'headers' => [
-                    'Accept' => 'application/json','Content-type' => 'application/json'
-                ],
-                'query' => [
-                    'part' => 'snippet',
-                    'maxResults' => $maxResults,
-                    'q' => $search,
-                    'type' => 'channel',
-                    'key' => Config::get('values.apiKey')
-                ],
-            ])->getBody();
+        try {
+            $client = new Client();
+            $response = $client->request('GET',
+                'https://www.googleapis.com/youtube/v3/search',
+                [
+                    'headers' => [
+                        'Accept' => 'application/json','Content-type' => 'application/json'
+                    ],
+                    'query' => [
+                        'part' => 'snippet',
+                        'maxResults' => $maxResults,
+                        'q' => $search,
+                        'type' => 'channel',
+                        'key' => Config::get('values.apiKey')
+                    ],
+                ])->getBody();
 
-        return json_decode($response);
+            return json_decode($response);
+
+        } catch (\Exception $e) {
+
+            return false;
+        }
     }
 
     public function getChannelData($id)
     {
-        $client = new Client();
-        $response = $client->request('GET',
-            'https://www.googleapis.com/youtube/v3/channels',
-            [
-                'headers' => [
-                    'Accept' => 'application/json','Content-type' => 'application/json'
-                ],
-                'query' => [
-                    'part' => 'snippet,contentDetails,statistics,topicDetails,status',
-                    'id' => $id,
-                    'key' => Config::get('values.apiKey')
-                ],
-            ])->getBody();
+        try {
+            $client = new Client();
+            $response = $client->request('GET',
+                'https://www.googleapis.com/youtube/v3/channels',
+                [
+                    'headers' => [
+                        'Accept' => 'application/json','Content-type' => 'application/json'
+                    ],
+                    'query' => [
+                        'part' => 'snippet,contentDetails,statistics,topicDetails,status',
+                        'id' => $id,
+                        'key' => Config::get('values.apiKey')
+                    ],
+                ])->getBody();
 
-        return json_decode($response);
+            return json_decode($response);
+
+        } catch (\Exception $e) {
+
+            return false;
+        }
     }
 
     public function getVideoData($id)
     {
-        $client = new Client();
-        $response = $client->request('GET',
-            'https://www.googleapis.com/youtube/v3/videos',
-            [
-                'headers' => [
-                    'Accept' => 'application/json','Content-type' => 'application/json'
-                ],
-                'query' => [
-                    'part' => 'snippet,contentDetails,statistics,status',
-                    'id' => $id,
-                    'key' => Config::get('values.apiKey')
-                ],
-            ])->getBody();
+        try {
+            $client = new Client();
+            $response = $client->request('GET',
+                'https://www.googleapis.com/youtube/v3/videos',
+                [
+                    'headers' => [
+                        'Accept' => 'application/json','Content-type' => 'application/json'
+                    ],
+                    'query' => [
+                        'part' => 'snippet,contentDetails,statistics,status',
+                        'id' => $id,
+                        'key' => Config::get('values.apiKey')
+                    ],
+                ])->getBody();
 
-        return json_decode($response);
+            return json_decode($response);
+
+        } catch (\Exception $e) {
+
+            return false;
+        }
     }
 
     public function searchCurrencyExchangeValues()
     {
-        $client = new Client();
-        $response = $client->request('GET',
-            'https://api.exchangeratesapi.io/latest',
-            [
-                'headers' => [
-                    'Accept' => 'application/json','Content-type' => 'application/json'
-                ],
-                'query' => [
-                    'base' => 'USD',
-                    'symbols' => 'EUR,HRK'
-                ],
-            ])->getBody();
+        try {
+            $client = new Client();
+            $response = $client->request('GET',
+                'https://api.exchangeratesapi.io/latest',
+                [
+                    'headers' => [
+                        'Accept' => 'application/json','Content-type' => 'application/json'
+                    ],
+                    'query' => [
+                        'base' => 'USD',
+                        'symbols' => 'EUR,HRK'
+                    ],
+                ])->getBody();
 
-        return json_decode($response);
+            return json_decode($response);
+
+        } catch (\Exception $e) {
+
+            return false;
+        }
     }
 }
