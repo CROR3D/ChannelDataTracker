@@ -26,6 +26,14 @@ class AddChannelForm extends Form
     {
         $channelId = $this->data['addChannelID'];
         $channelAPIData = APIManager::getChannelData($channelId);
+
+        if(!$channelAPIData)
+        {
+            $this->setMessage('Can not add channel by ID! Data connection lost!');
+
+            return false;
+        }
+
         $channelData = $channelAPIData->items[0];
 
         $channelId = $channelData->id;

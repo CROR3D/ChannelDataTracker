@@ -19,10 +19,17 @@ class PageData
         $today = Carbon::now();
         $day = $today->day;
         $data = [];
+        $error = false;
 
         foreach ($channels as $dbChannel) {
             $channelId = $dbChannel->id;
             $channelCurrentData = APIManager::getChannelData($channelId);
+
+            if(!$channelCurrentData)
+            {
+                $error = true;
+                break;
+            }
 
             $channel = [
                 'subs' => $channelCurrentData->items[0]->statistics->subscriberCount,
@@ -243,6 +250,8 @@ class PageData
 
             $data = array_merge($data, $channelData);
         }
+
+        if($error) return false;
 
         return $data;
     }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use stdClass;
 use Illuminate\Http\Request;
 use App\Core\Data\PageData;
 use App\Http\Controllers\FormController;
@@ -11,14 +12,23 @@ class ChannelController extends Controller
     public function index()
     {
         $submitted = session()->get('submitted');
+        $connectionStatus = 'ACTIVE';
 
-        $searchData = null;
-
-        if(!$submitted) $searchData = $submitted['searchData'];
+        if($submitted)
+        {
+            $searchData = new stdClass();
+            $searchData = $submitted['searchData'];
+        }
+        else
+        {
+            $searchData = null;
+        }
 
         $pageData = PageData::get();
 
-        return view('index')->with(['searchData' => $searchData, 'data' => $pageData]);
+        if(!$pageData) $connectionStatus = 'LOST';
+
+        return view('index')->with(['searchData' => $searchData, 'data' => $pageData, 'connectionStatus' => $connectionStatus]);
     }
 
     public function executeForm(Request $request)

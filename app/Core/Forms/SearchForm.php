@@ -28,6 +28,13 @@ class SearchForm extends Form
     {
         $searchData = APIManager::searchChannels($this->data['maxResults'], $this->data['search']);
 
+        if(!$searchData)
+        {
+            $this->setMessage('Search service is currently unavailable!');
+
+            return false;
+        }
+
         return [
             'searchData' => $searchData
         ];

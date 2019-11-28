@@ -27,6 +27,11 @@ label,
     color: #6c757d;
 }
 
+.error-status {
+    font-size: 26px;
+    font-weight: 200;
+}
+
 .btn {
     padding: 5px 15px !important;
 }
@@ -130,22 +135,24 @@ label,
     border: 1px solid rgba(0,0,0, 0.6);
     border-radius: 5px;
     background-color: #1c1e22;
+    padding-top: 40px;
+    padding-bottom: 40px;
 }
 
 #channel-form-wrapper {
     width: 400px;
-    height: 190px;
+    height: 270px;
 }
 
 #channel-settings-form-wrapper {
     width: 400px;
-    height: 460px;
+    height: 540px;
 }
 
 #video-info-form-wrapper,
 #video-settings-form-wrapper {
     width: 400px;
-    height: 560px;
+    height: 640px;
 }
 
 #factor_currency,
@@ -439,17 +446,21 @@ input[type=radio] {
         padding-right: 0px;
     }
 
+    .data-connection {
+        padding-right: 15px;
+    }
+
     .jumbotron {
         border-style: none;
         border-radius: 0;
     }
 
     #channel-settings-form-wrapper {
-        height: 500px;
+        height: 580px;
     }
 
     #video-settings-form-wrapper {
-        height: 605px;
+        height: 685px;
     }
 
     #channelSettingsEarningFactor,
@@ -540,6 +551,7 @@ input[type=radio] {
     #search {
         display: block;
         width: 100%;
+        flex: auto;
     }
 
     #search,
@@ -597,8 +609,6 @@ input[type=radio] {
         margin: 0;
         border-style: none;
         border-radius: 0;
-        padding-top: 40px;
-        padding-bottom: 40px;
     }
 }
 
