@@ -37,8 +37,11 @@ class AddChannelForm extends Form
         $channelData = $channelAPIData->items[0];
 
         $channelId = $channelData->id;
-        $today = Carbon::now();
-        $day = $today->day;
+        $getToday = Carbon::now()->day;
+
+        $currentViews = $channelData->statistics->viewCount;
+        $currentVideos = $channelData->statistics->videoCount;
+        $currentSubs = $channelData->statistics->subscriberCount;
 
         $channel = [
             'id' => $channelId,
@@ -47,10 +50,13 @@ class AddChannelForm extends Form
 
         $dailyData = [
             'channel_id' => $channelId,
-            'day' . $day => [
-                'subs' => $channelData->statistics->subscriberCount,
-                'videos' => $channelData->statistics->videoCount,
-                'views' => $channelData->statistics->viewCount
+            'day' . $getToday => [
+                'currentViews' => $currentViews,
+                'currentSubs' => $currentSubs,
+                'currentVideos' => $currentVideos,
+                'subs' => 0,
+                'videos' => 0,
+                'views' => 0
             ]
         ];
 

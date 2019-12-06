@@ -15,7 +15,10 @@
       <div class="container-wrapper">
         <div class="container">
             <div class="data-connection text-right my-3">
-                Data connection: <span class="text-danger">{{ $connectionStatus }}</span>
+                Data connection:
+                <span class="{{ ($connectionStatus == 'ACTIVE') ? 'text-success' : 'text-danger' }}">
+                    {{ $connectionStatus }}
+                </span>
             </div>
             <div class="jumbotron pb-0">
                 <h1 class="display-4">Youtube Statistics</h1>
@@ -144,7 +147,7 @@
                                                             VIEWS YESTERDAY
                                                             @break
                                                         @case('average')
-                                                            VIEWS (avg last MONTH)
+                                                            VIEWS (avg this MONTH)
                                                             @break
                                                         @default
                                                             VIEWS
@@ -171,31 +174,31 @@
                                                 <div class="col">
                                                     @switch($tracking)
                                                         @case('daily')
-                                                            <span>{{ $channel['channel_calculation']['daily']['calculatedYesterday']['views'] }}</span>
-                                                            <span class="text-success earning-border">{{ $channel['channel_calculation']['daily']['calculatedYesterday']['earning'] }}</span>
+                                                            <span>{{ $channel['all_videos_sum']['daily']['calculatedYesterday']['views'] }}</span>
+                                                            <span class="text-success earning-border">{{ $channel['all_videos_sum']['daily']['calculatedYesterday']['earning'] }}</span>
                                                             @break
                                                         @case('average')
-                                                            <span>{{ $channel['channel_calculation']['average']['calculatedMonthViews']['views'] }}</span>
-                                                            <span class="text-success earning-border">{{ $channel['channel_calculation']['average']['calculatedMonthViews']['earning'] }}</span>
+                                                            <span>{{ $channel['all_videos_sum']['average']['calculatedMonthViews']['views'] }}</span>
+                                                            <span class="text-success earning-border">{{ $channel['all_videos_sum']['average']['calculatedMonthViews']['earning'] }}</span>
                                                             @break
                                                         @default
-                                                            <span>{{ $channel['channel_calculation']['total']['calculatedViews']['views'] }}</span>
-                                                            <span class="text-success earning-border">{{ $channel['channel_calculation']['total']['calculatedViews']['earning'] }}</span>
+                                                            <span>{{ $channel['all_videos_sum']['total']['calculatedViews']['views'] }}</span>
+                                                            <span class="text-success earning-border">{{ $channel['all_videos_sum']['total']['calculatedViews']['earning'] }}</span>
                                                     @endswitch
                                                 </div>
                                                 <div class="col">
                                                     @switch($tracking)
                                                         @case('daily')
-                                                            <span>{{ $channel['channel_calculation']['daily']['calculatedToday']['views'] }}</span>
-                                                            <span class="text-success earning-border">{{ $channel['channel_calculation']['daily']['calculatedToday']['earning'] }}</span>
+                                                            <span>{{ $channel['all_videos_sum']['daily']['calculatedToday']['views'] }}</span>
+                                                            <span class="text-success earning-border">{{ $channel['all_videos_sum']['daily']['calculatedToday']['earning'] }}</span>
                                                             @break
                                                         @case('average')
-                                                            <span>{{ $channel['channel_calculation']['average']['calculatedYearViews']['views'] }}</span>
-                                                            <span class="text-success earning-border">{{ $channel['channel_calculation']['average']['calculatedYearViews']['earning'] }}</span>
+                                                            <span>{{ $channel['all_videos_sum']['average']['calculatedYearViews']['views'] }}</span>
+                                                            <span class="text-success earning-border">{{ $channel['all_videos_sum']['average']['calculatedYearViews']['earning'] }}</span>
                                                             @break
                                                         @default
-                                                            <span>{{ $channel['channel_calculation']['total']['calculatedMonthlyViews']['monthlyViews'] }}</span>
-                                                            <span class="text-success earning-border">{{ $channel['channel_calculation']['total']['calculatedMonthlyViews']['earning'] }}</span>
+                                                            <span>{{ $channel['all_videos_sum']['total']['calculatedMonthlyViews']['monthlyViews'] }}</span>
+                                                            <span class="text-success earning-border">{{ $channel['all_videos_sum']['total']['calculatedMonthlyViews']['earning'] }}</span>
                                                     @endswitch
                                                 </div>
                                                 <div class="col"></div>
@@ -212,7 +215,7 @@
                                                                     VIEWS YESTERDAY:
                                                                     @break
                                                                 @case('average')
-                                                                    VIEWS (avg last MONTH):
+                                                                    VIEWS (avg this MONTH):
                                                                     @break
                                                                 @default
                                                                     VIEWS:

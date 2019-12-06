@@ -15,28 +15,34 @@ class ChannelDailyData extends DailyData
 
     public function get()
     {
-        $today = Carbon::now();
-        $day = $today->day;
+        $getToday = Carbon::now()->day;
 
-        $dailyTracking = ChannelDailyTracker::where('channel_id', $this->id)->first();
+        $dailyTracking = $this->getMonthData();
 
-        $todayData = $dailyTracking->{'day' . $day};
-
-        if($day === 1) {
-            $lastDayOfPreviousMonth = $today->startOfMonth()->subSeconds(1)->day;
-            $yesterdayData = $dailyTracking->{'day' . $lastDayOfPreviousMonth};
-        } else {
-            $yesterdayData = $dailyTracking->{'day' . ($day - 1)};
+        if($getToday === 1)
+        {
+            $getYesterday = Carbon::now()->startOfMonth()->subSeconds(1)->day;
         }
+        else
+        {
+            $getYesterday = $getToday - 1;
+        }
+
+        $todayData = $dailyTracking->{'day' . $getToday};
+        $yesterdayData = $dailyTracking->{'day' . $getYesterday};
 
         return [
             'yesterday' => [
-                'subs' => ($yesterdayData['subs']) ? $yesterdayData['subs'] : $todayData['subs'],
-                'views' => ($yesterdayData['views']) ? $yesterdayData['views'] : $todayData['views'],
+                'currentViews' => $yesterdayData['currentViews'],
+                'currentSubs' => $yesterdayData['currentSubs'],
+                'views' => ($yesterdayData['views']) ? $yesterdayData['views'] : 0,
+                'subs' => ($yesterdayData['subs']) ? $yesterdayData['subs'] : 0
             ],
             'today' => [
-                'subs' => $todayData['subs'],
-                'views' => $todayData['views']
+                'currentViews' => $todayData['currentViews'],
+                'currentSubs' => $todayData['currentSubs'],
+                'views' => $todayData['views'],
+                'subs' => $todayData['subs']
             ]
         ];
     }

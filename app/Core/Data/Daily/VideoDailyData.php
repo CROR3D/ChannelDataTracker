@@ -16,24 +16,28 @@ class VideoDailyData extends DailyData
 
     public function get()
     {
-        $today = Carbon::now();
-        $day = $today->day;
+        $getToday = Carbon::now()->day;
 
-        $dailyTracking = VideoDailyTracker::where('video_id', $this->id)->first();
+        $dailyTracking = $this->getMonthData();
 
-        $todayData = $dailyTracking->{'day' . $day};
+        $todayData = $dailyTracking->{'day' . $getToday};
 
-        if($day === 1) {
-            $lastDayOfPreviousMonth = $today->startOfMonth()->subSeconds(1)->day;
-            $yesterdayData = $dailyTracking->{'day' . $lastDayOfPreviousMonth};
-        } else {
-            $yesterdayData = $dailyTracking->{'day' . ($day - 1)};
+        if($getToday === 1)
+        {
+            $getYesterday = Carbon::now()->startOfMonth()->subSeconds(1)->day;
         }
+        else
+        {
+            $getYesterday = $getToday - 1;
+        }
+
+        $todayData = $dailyTracking->{'day' . $getToday};
+        $yesterdayData = $dailyTracking->{'day' . $getYesterday};
 
         return [
             'yesterday' => [
-                'views' => ($yesterdayData['views']) ? $yesterdayData['views'] : $todayData['views'],
-                'earned' => ($yesterdayData['earned']) ? $yesterdayData['earned'] : $todayData['earned']
+                'views' => ($yesterdayData['views']) ? $yesterdayData['views'] : 0,
+                'earned' => ($yesterdayData['earned']) ? $yesterdayData['earned'] : 0
             ],
             'today' => [
                 'views' => $todayData['views'],

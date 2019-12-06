@@ -4,46 +4,57 @@ namespace App\Core\Data;
 
 class ConvertData
 {
-    public static function calculateAverage($array, $trackedZero, $type)
+    public static function calculateAverage($array, $type)
     {
         $sum = 0;
         $count = 0;
-        $areViews = $type === 'views';
+        $areViews = ($type === 'views');
 
         foreach ($array as $value) {
-            if(gettype($value) === 'string') {
-                $value = json_decode($value);
-                $arrayViews = $value->views;
-                $arrayEarned = $value->earned;
-            } else {
-                $arrayViews = $value['views'];
-                $arrayEarned = $value['earned'];
+
+            if(is_null($value)) continue;
+
+            if(gettype($value) === 'string')
+            {
+                $value = (array) json_decode($value);
             }
 
-            if($areViews && !is_null($value) && $trackedZero) {
-                $number = $arrayViews - $trackedZero;
+            if($areViews)
+            {
+                $number = $value['views'];
                 $count++;
-            } elseif(!$areViews && !is_null($value)) {
-                $number = $arrayEarned;
+            }
+            elseif(!$areViews)
+            {
+                $number = $value['earned'];
                 $count++;
-            } else {
+            }
+            else
+            {
                 $number = 0;
             }
+
+            $sum += $number;
         }
 
-        $sum += $number;
-
-        if($count === 0) {
-            if($areViews) {
+        if($count === 0)
+        {
+            if($areViews)
+            {
                 return 0;
-            } else {
+            }
+            else
+            {
                 return number_format(0, 2);
             }
         }
 
-        if($areViews) {
+        if($areViews)
+        {
             return $sum / $count;
-        } else {
+        }
+        else
+        {
             return number_format($sum / $count, 2);
         }
     }
@@ -53,14 +64,14 @@ class ConvertData
         switch($currency) {
             case 'HRK':
                 $currentState = $currencyExchange->rates->HRK;
-                return number_format($value * $currentState, 2);
+                return $value * $currentState;
                 break;
             case 'EUR':
                 $currentState = $currencyExchange->rates->EUR;
-                return number_format($value * $currentState, 2);
+                return $value * $currentState;
                 break;
             default:
-                return number_format($value, 2);
+                return $value;
                 break;
         }
     }
@@ -69,13 +80,13 @@ class ConvertData
     {
         switch($currency) {
             case 'HRK':
-                return $value . 'kn';
+                return number_format($value, 2) . 'kn';
                 break;
             case 'EUR':
-                return $value . '€';
+                return number_format($value, 2) . '€';
                 break;
             default:
-                return $value . '$';
+                return number_format($value, 2) . '$';
                 break;
         }
     }

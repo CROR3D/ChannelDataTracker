@@ -16,13 +16,22 @@ class PageData
     public static function get()
     {
         $channels = Channel::all();
-        $today = Carbon::now();
-        $day = $today->day;
-        $data = [];
+        $day = Carbon::now()->day;
+        $data = $channelVideos = [];
         $error = false;
 
-        foreach ($channels as $dbChannel) {
+        foreach ($channels as $dbChannel)
+        {
             $channelId = $dbChannel->id;
+
+            $totalCalculatedViews = $totalCalculatedMonthlyViews = 0;
+            $dailyCalculatedYesterdayViews = $dailyCalculatedTodayViews = 0;
+            $avgCalculatedMonthViews = $avgCalculatedYearViews = 0;
+
+            $totalCalculatedViewsEarning = $totalCalculatedMonthlyViewsEarning = 0;
+            $dailyCalculatedYesterdayEarning = $dailyCalculatedTodayEarning = 0;
+            $avgCalculatedMonthEarning = $avgCalculatedYearEarning = 0;
+
             $channelCurrentData = APIManager::getChannelData($channelId);
 
             if(!$channelCurrentData)
@@ -40,12 +49,156 @@ class PageData
             $channelDailyData = new ChannelDailyData($channelId);
             $channelDaily = $channelDailyData->get();
 
+            $videos = Video::where('channel_id', $channelId)->get();
+            $videoCount = count($videos);
+            $calculationCurrency = null;
+
+            foreach ($videos as $dbVideo)
+            {
+                $videoCurrentData = APIManager::getVideoData($dbVideo->id);
+                $videoViews =  $videoCurrentData->items[0]->statistics->viewCount;
+
+                $videoDailyData = new VideoDailyData($dbVideo->id);
+                $videoDaily = $videoDailyData->get();
+
+                $calculatedVideoDailyData = [
+                    'yesterdayViews' => $videoDaily['yesterday']['views'],
+                    'todayViews' => $videoDaily['today']['views']
+                ];
+
+                if(!$calculationCurrency) $calculationCurrency = $dbVideo->factor_currency;
+
+                $currencyExchange = APIManager::searchCurrencyExchangeValues();
+
+                $channelVideoFactorCurrency = $dbVideo->factor_currency;
+                $channelVideoEarningFactor = $dbVideo->earning_factor;
+
+                $totalEarningsOnViewsInDollars = (($videoViews - $dbVideo->tracked_zero) / 1000) * $channelVideoEarningFactor;
+                $totalEarningsOnMonthlyViewsInDollars = (($videoViews - $dbVideo->month_zero) / 1000) * $channelVideoEarningFactor;
+                $totalBasedOnViews = ConvertData::exchangeCurrency($channelVideoFactorCurrency, $currencyExchange, $totalEarningsOnViewsInDollars);
+                $totalBasedOnMonthlyViews = ConvertData::exchangeCurrency($channelVideoFactorCurrency, $currencyExchange, $totalEarningsOnMonthlyViewsInDollars);
+
+                $dailyYesterdayEarningsInDollars = ($calculatedVideoDailyData['yesterdayViews'] / 1000) * $channelVideoEarningFactor;
+                $dailyTodayEarningsInDollars = ($calculatedVideoDailyData['todayViews'] / 1000) * $channelVideoEarningFactor;
+                $dailyYesterday = ConvertData::exchangeCurrency($channelVideoFactorCurrency, $currencyExchange, $dailyYesterdayEarningsInDollars);
+                $dailyToday = ConvertData::exchangeCurrency($channelVideoFactorCurrency, $currencyExchange, $dailyTodayEarningsInDollars);
+
+                $videoMonthData = $videoDailyData->getMonthData();
+                $videoMonthData = $videoMonthData->getAttributes();
+                $videoMonthData = array_slice($videoMonthData, 1, -2);
+                $videoYearData = $videoDailyData->getYearData();
+                $videoYearData = $videoYearData->getAttributes();
+                $videoYearData = array_slice($videoYearData, 2, -2);
+
+                $avgMonth = ConvertData::exchangeCurrency($channelVideoFactorCurrency, $currencyExchange, ConvertData::calculateAverage($videoMonthData, 'earnings'), $channelVideoFactorCurrency);
+                $avgYear = ConvertData::exchangeCurrency($channelVideoFactorCurrency, $currencyExchange, ConvertData::calculateAverage($videoYearData, 'earnings'), $channelVideoFactorCurrency);
+
+                $history = History::where('video_id', $dbVideo->id)->first();
+
+                $channelVideo = [
+                    'id' => $dbVideo->id,
+                    'channel_id' => $dbVideo->channel_id,
+                    'name' => $dbVideo->name,
+                    'tracked_zero' => $dbVideo->tracked_zero,
+                    'month_zero' => $dbVideo->month_zero,
+                    'earning_factor' => $channelVideoEarningFactor,
+                    'factor_currency' => $channelVideoFactorCurrency,
+                    'treshold' => $dbVideo->treshold,
+                    'note' => $dbVideo->note,
+                    'history' => $history,
+                    'video_data' => [
+                        'total' => [
+                            'calculatedViews' => [
+                                'views' => $videoViews,
+                                'monthlyViews' => $videoViews - $dbVideo->month_zero
+                            ],
+                            'calculatedEarnings' => [
+                                'views' => ConvertData::addCurrency($totalBasedOnViews, $channelVideoFactorCurrency),
+                                'monthlyViews' => ConvertData::addCurrency($totalBasedOnMonthlyViews, $channelVideoFactorCurrency)
+                            ]
+                        ],
+                        'daily' => [
+                            'calculatedViews' => [
+                                'yesterdayViews' => $calculatedVideoDailyData['yesterdayViews'],
+                                'todayViews' => $calculatedVideoDailyData['todayViews']
+                            ],
+                            'calculatedEarnings' => [
+                                'yesterdayViews' => ConvertData::addCurrency(ConvertData::exchangeCurrency($channelVideoFactorCurrency, $currencyExchange, $videoDaily['yesterday']['earned']), $channelVideoFactorCurrency),
+                                'todayViews' => ConvertData::addCurrency(ConvertData::exchangeCurrency($channelVideoFactorCurrency, $currencyExchange, $videoDaily['today']['earned']), $channelVideoFactorCurrency)
+                            ]
+                        ],
+                        'average' => [
+                            'calculatedViews' => [
+                                'lastMonthViews' => ConvertData::calculateAverage($videoMonthData, 'views'),
+                                'lastYearViews' => ConvertData::calculateAverage($videoYearData, 'views')
+                            ],
+                            'calculatedEarnings' => [
+                                'lastMonthViews' => ConvertData::addCurrency($avgMonth, $channelVideoFactorCurrency),
+                                'lastYearViews' => ConvertData::addCurrency($avgYear, $channelVideoFactorCurrency)
+                            ]
+                        ]
+                    ]
+                ];
+
+                array_push($channelVideos, $channelVideo);
+
+                // IF VIDEO COUNT IS MORE THAN 1, CALCULATE TOTAL SUM OF ALL VIEWS AND EARNINGS
+                if($videoCount > 1)
+                {
+                    // CONVERT VALUES IF VIDEO HAS SET DIFFERENT CURRENCY THAN OTHER VIDEOS FROM CURRENT CHANNEL
+                    if($calculationCurrency !== $channelVideo['factor_currency'])
+                    {
+                        $totalBasedOnViewsExchanged = ConvertData::exchangeCurrency($calculationCurrency, $currencyExchange, $totalEarningsOnViewsInDollars);
+                        $totalBasedOnMonthlyViewsExchanged = ConvertData::exchangeCurrency($calculationCurrency, $currencyExchange, $totalEarningsOnMonthlyViewsInDollars);
+                        $totalCalculatedViewsEarning += $totalBasedOnViewsExchanged;
+                        $totalCalculatedMonthlyViewsEarning += $totalBasedOnMonthlyViewsExchanged;
+
+                        $dailyYesterdayExchanged = ConvertData::exchangeCurrency($calculationCurrency, $currencyExchange, $dailyYesterdayEarningsInDollars);
+                        $dailyTodayExchanged = ConvertData::exchangeCurrency($calculationCurrency, $currencyExchange, $dailyTodayEarningsInDollars);
+                        $dailyCalculatedYesterdayEarning += $dailyYesterdayExchanged;
+                        $dailyCalculatedTodayEarning += $dailyTodayExchanged;
+
+                        $avgMonthExchanged = ConvertData::exchangeCurrency($calculationCurrency, $currencyExchange, $channelVideo['video_data']['average']['calculatedEarnings']['lastMonthViews']);
+                        $avgYearExchanged = ConvertData::exchangeCurrency($calculationCurrency, $currencyExchange, $channelVideo['video_data']['average']['calculatedEarnings']['lastYearViews']);
+                        $avgCalculatedMonthEarning += $avgMonthExchanged;
+                        $avgCalculatedYearEarning += $avgYearExchanged;
+                    }
+                    else
+                    {
+                        $totalCalculatedViewsEarning += $totalBasedOnViews;
+                        $totalCalculatedMonthlyViewsEarning += $totalBasedOnMonthlyViews;
+
+                        $dailyCalculatedYesterdayEarning += $dailyYesterday;
+                        $dailyCalculatedTodayEarning += $dailyToday;
+
+                        $avgCalculatedMonthEarning += ConvertData::exchangeCurrency($channelVideoFactorCurrency, $currencyExchange, ConvertData::calculateAverage($videoMonthData, 'earnings'));
+                        $avgCalculatedYearEarning += ConvertData::exchangeCurrency($channelVideoFactorCurrency, $currencyExchange, ConvertData::calculateAverage($videoYearData, 'earnings'));
+                    }
+
+                    $totalCalculatedViews += $videoViews;
+                    $totalCalculatedMonthlyViews = ($totalCalculatedMonthlyViews + $videoViews) - $dbVideo->month_zero;
+
+                    $dailyCalculatedYesterdayViews += $calculatedVideoDailyData['yesterdayViews'];
+                    $dailyCalculatedTodayViews += $calculatedVideoDailyData['todayViews'];
+
+                    $avgCalculatedMonthViews += $channelVideo['video_data']['average']['calculatedViews']['lastMonthViews'];
+                    $avgCalculatedYearViews += $channelVideo['video_data']['average']['calculatedViews']['lastYearViews'];
+                }
+            }
+
+            $totalCalculatedViewsEarning = ConvertData::addCurrency(number_format($totalCalculatedViewsEarning, 2), $calculationCurrency);
+            $totalCalculatedMonthlyViewsEarning = ConvertData::addCurrency(number_format($totalCalculatedMonthlyViewsEarning, 2), $calculationCurrency);
+            $dailyCalculatedYesterdayEarning = ConvertData::addCurrency(number_format($dailyCalculatedYesterdayEarning, 2), $calculationCurrency);
+            $dailyCalculatedTodayEarning = ConvertData::addCurrency(number_format($dailyCalculatedTodayEarning, 2), $calculationCurrency);
+            $avgCalculatedMonthEarning = ConvertData::addCurrency(number_format($avgCalculatedMonthEarning, 2), $calculationCurrency);
+            $avgCalculatedYearEarning = ConvertData::addCurrency(number_format($avgCalculatedYearEarning, 2), $calculationCurrency);
+
             $channelData = array(
                 $channelId => [
                     'id' => $channelId,
                     'name' => $dbChannel->name,
                     'tracking' => $dbChannel->tracking,
-                    'channel_videos' => [],
+                    'channel_videos' => $channelVideos,
                     'channel_data' => [
                         'total' => [
                             'subs' => $channel['subs'],
@@ -53,12 +206,12 @@ class PageData
                         ],
                         'daily' => [
                             'yesterday' => [
-                                'subs' => $channelDaily['today']['subs'] - $channelDaily['yesterday']['subs'],
-                                'views' => $channelDaily['today']['views'] - $channelDaily['yesterday']['views']
+                                'subs' => $channelDaily['yesterday']['subs'],
+                                'views' => $channelDaily['yesterday']['views']
                             ],
                             'today' => [
-                                'subs' => $channel['subs'] - $channelDaily['today']['subs'],
-                                'views' => $channel['views'] - $channelDaily['today']['views']
+                                'subs' => $channel['subs'] - $channelDaily['today']['currentSubs'],
+                                'views' => $channel['views'] - $channelDaily['today']['currentViews']
                             ]
                         ],
                         'average' => [
@@ -72,181 +225,40 @@ class PageData
                             ]
                         ]
                     ],
-                    'channel_calculation' => [
+                    'all_videos_sum' => [
                         'total' => [
                             'calculatedViews' => [
-                                'views' => 0,
-                                'earning' => 0
+                                'views' => $totalCalculatedViews,
+                                'earning' => $totalCalculatedViewsEarning
                             ],
                             'calculatedMonthlyViews' => [
-                                'monthlyViews' => 0,
-                                'earning' => 0
+                                'monthlyViews' => $totalCalculatedMonthlyViews,
+                                'earning' => $totalCalculatedMonthlyViewsEarning
                             ]
                         ],
                         'daily' => [
                             'calculatedYesterday' => [
-                                'views' => 0,
-                                'earning' => 0
+                                'views' => $dailyCalculatedYesterdayViews,
+                                'earning' => $dailyCalculatedYesterdayEarning
                             ],
                             'calculatedToday' => [
-                                'views' => 0,
-                                'earning' => 0
+                                'views' => $dailyCalculatedTodayViews,
+                                'earning' => $dailyCalculatedTodayEarning
                             ]
                         ],
                         'average' => [
                             'calculatedMonthViews' => [
-                                'views' => 0,
-                                'earning' => 0
+                                'views' => $avgCalculatedMonthViews,
+                                'earning' => $avgCalculatedMonthEarning
                             ],
                             'calculatedYearViews' => [
-                                'views' => 0,
-                                'earning' => 0
+                                'views' => $avgCalculatedYearViews,
+                                'earning' => $avgCalculatedYearEarning
                             ]
                         ]
                     ]
                 ]
             );
-
-            $videos = Video::where('channel_id', $channelId)->get();
-            $videoCount = count($videos);
-            $calculationCurrency = null;
-
-            foreach ($videos as $dbVideo) {
-                $videoCurrentData = APIManager::getVideoData($dbVideo->id);
-                $videoViews =  $videoCurrentData->items[0]->statistics->viewCount;
-
-                $videoDailyData = new VideoDailyData($dbVideo->id);
-                $videoDaily = $videoDailyData->get();
-
-                $calculatedVideoDailyData = [
-                    'yesterdayViews' => $videoDaily['today']['views'] - $videoDaily['yesterday']['views'],
-                    'todayViews' => $videoViews - $videoDaily['today']['views']
-                ];
-
-                if(!$calculationCurrency) $calculationCurrency = $dbVideo->factor_currency;
-                $channelVideo = [
-                    'id' => $dbVideo->id,
-                    'channel_id' => $dbVideo->channel_id,
-                    'name' => $dbVideo->name,
-                    'tracked_zero' => $dbVideo->tracked_zero,
-                    'month_zero' => $dbVideo->month_zero,
-                    'earning_factor' => $dbVideo->earning_factor,
-                    'factor_currency' => $dbVideo->factor_currency,
-                    'treshold' => $dbVideo->treshold,
-                    'note' => $dbVideo->note,
-                    'video_data' => [
-                        'total' => [
-                            'calculatedViews' => [
-                                'views' => $videoViews,
-                                'monthlyViews' => $videoViews - $dbVideo->month_zero
-                            ]
-                        ]
-                    ]
-                ];
-
-                $currencyExchange = APIManager::searchCurrencyExchangeValues();
-
-                $earningsOnViewsInDollars = (($videoViews - $channelVideo['tracked_zero']) / 1000) * $channelVideo['earning_factor'];
-                $earningsOnMonthlyViewsInDollars = (($videoViews - $channelVideo['month_zero']) / 1000) * $channelVideo['earning_factor'];
-
-                $basedOnViews = ConvertData::exchangeCurrency(
-                                    $channelVideo['factor_currency'],
-                                    $currencyExchange,
-                                    $earningsOnViewsInDollars
-                                );
-
-                $basedOnMonthlyViews = ConvertData::exchangeCurrency(
-                                           $channelVideo['factor_currency'],
-                                           $currencyExchange,
-                                           $earningsOnMonthlyViewsInDollars
-                                       );
-
-                $channelVideo['video_data']['total']['calculatedEarnings']['views'] = ConvertData::addCurrency(
-                                                                                          $basedOnViews,
-                                                                                          $channelVideo['factor_currency']
-                                                                                      );
-
-                $channelVideo['video_data']['total']['calculatedEarnings']['monthlyViews'] = ConvertData::addCurrency(
-                                                                                                $basedOnMonthlyViews,
-                                                                                                $channelVideo['factor_currency']
-                                                                                             );
-
-                $channelVideo['video_data']['daily']['calculatedViews']['yesterdayViews'] = $calculatedVideoDailyData['yesterdayViews'];
-                $channelVideo['video_data']['daily']['calculatedViews']['todayViews'] = $calculatedVideoDailyData['todayViews'];
-
-                $channelVideo['video_data']['daily']['calculatedEarnings']['yesterdayViews'] = ConvertData::addCurrency(
-                                                                                                    ConvertData::exchangeCurrency($channelVideo['factor_currency'], $currencyExchange, $videoDaily['yesterday']['earned']),
-                                                                                                    $channelVideo['factor_currency']
-                                                                                                );
-
-                $channelVideo['video_data']['daily']['calculatedEarnings']['todayViews'] = ConvertData::addCurrency(
-                                                                                                ConvertData::exchangeCurrency($channelVideo['factor_currency'], $currencyExchange, $videoDaily['today']['earned']),
-                                                                                                $channelVideo['factor_currency']
-                                                                                            );
-
-                $videoMonthData = $videoDailyData->getMonthData();
-                $videoMonthData = $videoMonthData->getAttributes();
-                $videoMonthData = array_slice($videoMonthData, 1, -2);
-
-                $videoYearData = $videoDailyData->getYearData();
-                $videoYearData = $videoYearData->getAttributes();
-                $videoYearData = array_slice($videoYearData, 2, -2);
-
-                $channelVideo['video_data']['average']['calculatedViews']['lastMonthViews'] = ConvertData::calculateAverage($videoMonthData, $channelVideo['tracked_zero'], 'views');
-                $channelVideo['video_data']['average']['calculatedViews']['lastYearViews'] = ConvertData::calculateAverage($videoYearData, $channelVideo['tracked_zero'], 'views');
-                $channelVideo['video_data']['average']['calculatedEarnings']['lastMonthViews'] = ConvertData::addCurrency(
-                                                                                                    ConvertData::exchangeCurrency($channelVideo['factor_currency'], $currencyExchange, ConvertData::calculateAverage($videoMonthData, null, 'earnings')),
-                                                                                                    $channelVideo['factor_currency']
-                                                                                                 );
-                $channelVideo['video_data']['average']['calculatedEarnings']['lastYearViews'] = ConvertData::addCurrency(
-                                                                                                    ConvertData::exchangeCurrency($channelVideo['factor_currency'], $currencyExchange, ConvertData::calculateAverage($videoYearData, null, 'earnings')),
-                                                                                                    $channelVideo['factor_currency']
-                                                                                                 );
-
-                $history = History::where('video_id', $channelVideo['id'])->first();
-                $channelVideo['history'] = $history;
-
-                array_push($channelData[$channelId]['channel_videos'], $channelVideo);
-
-                if($videoCount > 1) {
-                    if($calculationCurrency !== $channelVideo['factor_currency']) {
-                        $basedOnViewsExchanged = ConvertData::exchangeCurrency(
-                                                    $calculationCurrency,
-                                                    $currencyExchange,
-                                                    $earningsOnViewsInDollars
-                                                );
-                        $basedOnMonthlyViewsExchanged = ConvertData::exchangeCurrency(
-                                                            $calculationCurrency,
-                                                            $currencyExchange,
-                                                            $earningsOnMonthlyViewsInDollars
-                                                        );
-
-                        $channelData[$channelId]['channel_calculation']['total']['calculatedViews']['earning'] =
-                            $channelData[$channelId]['channel_calculation']['total']['calculatedViews']['earning'] + $basedOnViewsExchanged;
-
-                        $channelData[$channelId]['channel_calculation']['total']['calculatedMonthlyViews']['earning'] =
-                            $channelData[$channelId]['channel_calculation']['total']['calculatedMonthlyViews']['earning'] + $basedOnMonthlyViewsExchanged;
-                    } else {
-                        $channelData[$channelId]['channel_calculation']['total']['calculatedViews']['earning'] =
-                            $channelData[$channelId]['channel_calculation']['total']['calculatedViews']['earning'] + $basedOnViews;
-
-                        $channelData[$channelId]['channel_calculation']['total']['calculatedMonthlyViews']['earning'] =
-                            $channelData[$channelId]['channel_calculation']['total']['calculatedMonthlyViews']['earning'] + $basedOnMonthlyViews;
-                    }
-
-                    $channelData[$channelId]['channel_calculation']['total']['calculatedViews']['views'] =
-                        $channelData[$channelId]['channel_calculation']['total']['calculatedViews']['views'] + $videoViews;
-
-                    $channelData[$channelId]['channel_calculation']['total']['calculatedMonthlyViews']['monthlyViews'] =
-                        $channelData[$channelId]['channel_calculation']['total']['calculatedMonthlyViews']['monthlyViews'] + $videoViews - $dbVideo->month_zero;
-                }
-            }
-
-            $channelData[$channelId]['channel_calculation']['total']['calculatedViews']['earning'] =
-                ConvertData::addCurrency(number_format($channelData[$channelId]['channel_calculation']['total']['calculatedViews']['earning'], 2), $calculationCurrency);
-
-            $channelData[$channelId]['channel_calculation']['total']['calculatedMonthlyViews']['earning'] =
-                ConvertData::addCurrency(number_format($channelData[$channelId]['channel_calculation']['total']['calculatedMonthlyViews']['earning'], 2), $calculationCurrency);
 
             $data = array_merge($data, $channelData);
         }

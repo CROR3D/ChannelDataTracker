@@ -46,26 +46,43 @@ class TrackChannels extends Command
         foreach ($channels as $channel) {
             $data = $channel->items[0];
             $channelId = $data->id;
+            $dbChannel = Channel::find($channelId);
             $channelDailyTracker = ChannelDailyTracker::where('channel_id', $channelId)->first();
-            $today = Carbon::now();
-            $day = $today->day;
+            $getToday = Carbon::now()->day;
 
-            if($day === 1) {
-                $lastDayOfPreviousMonth = $today->startOfMonth()->subSeconds(1)->day;
-            } else {
-                $lastDayOfPreviousMonth = $day - 1;
+            if($getToday === 1)
+            {
+                $getYesterday = Carbon::now()->startOfMonth()->subSeconds(1)->day;
+            }
+            else
+            {
+                $getYesterday = $getToday - 1;
             }
 
-            $dataDay = 'day' . $lastDayOfPreviousMonth;
+            $today = 'day' . $getToday;
+
+            $yesterdayData = $channelDailyTracker->{'day' . $getYesterday};
+
+            $currentViews = $data->statistics->viewCount;
+            $currentVideos = $data->statistics->videoCount;
+            $currentSubs = $data->statistics->subscriberCount;
+
+            $dailyViews = $currentViews - $yesterdayData['views'];
+            $dailyVideos = $currentVideos - $yesterdayData['videos'];
+            $dailySubs = $currentSubs - $yesterdayData['subs'];
 
             $updateData = [
-                $dataDay => [
-                    'subs' => $data->statistics->subscriberCount,
-                    'videos' => $data->statistics->videoCount,
-                    'views' => $data->statistics->viewCount
+                $today => [
+                    'currentViews' => $currentViews,
+                    'currentSubs' => $currentSubs,
+                    'currentVideos' => $currentVideos,
+                    'views' => $dailyViews,
+                    'subs' => $dailySubs,
+                    'videos' => $dailyVideos
                 ]
             ];
 
+            // TODO: IF UPDATE DATA IS THE SAME AS BEFORE (if returns false)
             $channelDailyTracker->updateChannelDailyTracker($updateData);
         }
     }

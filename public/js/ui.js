@@ -374,11 +374,16 @@ function clearErrors(clearMode) {
 
 function displayHistory(history) {
     const videoHistory = document.getElementById('videoHistory'),
-          videoTresholdsReached = document.getElementById('tresholdsReached');
+          videoTresholdsReached = document.getElementById('tresholdsReached'),
+          videoTrackingZero = document.getElementById('trackingZero');
 
     let historyArray = Object.keys(history).map(function(m) {
         return history[m];
     });
+
+    videoTrackingZero.innerHTML = `
+        <h4><span class="text-success">Tracked since:</span> ${history.created_at}</h4>
+    `;
 
     historyArray = historyArray.slice(2, -2);
 

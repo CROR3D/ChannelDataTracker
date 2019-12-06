@@ -46,25 +46,34 @@ class TrackVideos extends Command
         foreach ($videos as $video) {
             $data = $video->items[0];
             $videoId = $data->id;
+            $dbVideo = Video::find($videoId);
             $videoDailyTracker = VideoDailyTracker::where('video_id', $videoId)->first();
-            $today = Carbon::now();
-            $day = $today->day;
+            $getToday = Carbon::now()->day;
 
-            if($day === 1) {
-                $lastDayOfPreviousMonth = $today->startOfMonth()->subSeconds(1)->day;
-            } else {
-                $lastDayOfPreviousMonth = $day - 1;
+            if($getToday === 1)
+            {
+                $getYesterday = Carbon::now()->startOfMonth()->subSeconds(1)->day;
+            }
+            else
+            {
+                $getYesterday = $getToday - 1;
             }
 
-            $dataDay = 'day' . $lastDayOfPreviousMonth;
+            $today = 'day' . $getToday;
+
+            $yesterdayData = $videoDailyTracker->{'day' . $getYesterday};
+            $currentViews = $data->statistics->viewCount;
+            $dailyViews = $currentViews - $yesterdayData['currentViews'];
 
             $updateData = [
-                $dataDay => [
-                    'views' => $data->statistics->viewCount,
-                    'earned' => 0
+                $today => [
+                    'currentViews' => $currentViews,
+                    'views' => $dailyViews,
+                    'earned' => ($dailyViews / 1000) * $dbVideo->earning_factor
                 ]
             ];
 
+            // TODO: IF UPDATE DATA IS THE SAME AS BEFORE (if returns false)
             $videoDailyTracker->updateVideoDailyTracker($updateData);
         }
     }

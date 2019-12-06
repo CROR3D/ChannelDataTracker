@@ -26,7 +26,7 @@ class ChannelController extends Controller
 
         $pageData = PageData::get();
 
-        if(!$pageData) $connectionStatus = 'LOST';
+        if(!$pageData && !is_array($pageData)) $connectionStatus = 'LOST';
 
         return view('index')->with(['searchData' => $searchData, 'data' => $pageData, 'connectionStatus' => $connectionStatus]);
     }

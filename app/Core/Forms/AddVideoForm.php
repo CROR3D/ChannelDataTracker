@@ -58,7 +58,7 @@ class AddVideoForm extends Form
             return false;
         }
 
-        $video = [
+        $addVideo = [
             'id' => $videoId,
             'channel_id' => $channelId,
             'name' => ($this->data['videoSettingsTitle'] === null) ? $video->items[0]->snippet->title : $this->data['videoSettingsTitle'],
@@ -73,7 +73,8 @@ class AddVideoForm extends Form
         $dailyData = [
             'video_id' => $videoId,
             'day' . $day => [
-                'views' => $video['tracked_zero'],
+                'currentViews' => $video->items[0]->statistics->viewCount,
+                'views' => 0,
                 'earned' => 0
             ]
         ];
@@ -83,7 +84,7 @@ class AddVideoForm extends Form
         ];
 
         $newVideo = new Video;
-        $newVideo->saveVideo($video);
+        $newVideo->saveVideo($addVideo);
 
         $newVideoDailyTracker = new VideoDailyTracker;
         $newVideoDailyTracker->saveVideoDailyTracker($dailyData);
@@ -91,7 +92,7 @@ class AddVideoForm extends Form
         $newVideoHistory = new History;
         $newVideoHistory->saveHistory($historyData);
 
-        $this->setMessage('Video "' . $video['name'] . '" successfully added!');
+        $this->setMessage('Video "' . $addVideo['name'] . '" successfully added!');
 
         return true;
     }
