@@ -14,11 +14,16 @@
   <body>
       <div class="container-wrapper">
         <div class="container">
-            <div class="data-connection text-right my-3">
-                Data connection:
-                <span class="{{ ($connectionStatus == 'ACTIVE') ? 'text-success' : 'text-danger' }}">
-                    {{ $connectionStatus }}
-                </span>
+            <div class="row top-header my-3">
+                <div class="col data-user text-left">
+                    Logged in - R3D
+                </div>
+                <div class="col data-connection text-right">
+                    Data connection:
+                    <span class="{{ ($connectionStatus == 'ACTIVE') ? 'text-success' : 'text-danger' }}">
+                        {{ $connectionStatus }}
+                    </span>
+                </div>
             </div>
             <div class="jumbotron pb-0">
                 <h1 class="display-4">Youtube Statistics</h1>
@@ -134,6 +139,7 @@
                                             <div class="element-group">
                                                 <input class="video-id p-2 mr-3" name="video_id" type="text" autocomplete="off">
                                                 <button class="btn-custom btn-custom-secondary add-video" name="add_video_popup" value="{{ $channel['id'] }}">Add <span>Video</span></button>
+                                                <button class="btn-custom btn-custom-tracking ml-3">Tracking zero: <span>TRUE</span></button>
                                                 <button class="btn-custom btn-custom-secondary edit-channel" name="edit-channel" value="{{ $channel['id'] }}" data-channel="{{ json_encode($channel) }}">Channel <span>Settings</span></button>
                                             </div>
                                         </div>

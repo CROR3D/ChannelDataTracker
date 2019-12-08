@@ -14,7 +14,8 @@ class APIManager
         $channels = Channel::all();
         $data = [];
 
-        foreach ($channels as $channel) {
+        foreach ($channels as $channel)
+        {
             array_push($data, $this->getChannelData($channel->id));
         }
 
@@ -26,7 +27,8 @@ class APIManager
         $videos = Video::all();
         $data = [];
 
-        foreach ($videos as $video) {
+        foreach ($videos as $video)
+        {
             array_push($data, $this->getVideoData($video->id));
         }
 
@@ -35,7 +37,8 @@ class APIManager
 
     public function searchChannels($maxResults, $search)
     {
-        try {
+        try
+        {
             $client = new Client();
             $response = $client->request('GET',
                 'https://www.googleapis.com/youtube/v3/search',
@@ -54,15 +57,17 @@ class APIManager
 
             return json_decode($response);
 
-        } catch (\Exception $e) {
-
+        }
+        catch (\Exception $e)
+        {
             return false;
         }
     }
 
     public function getChannelData($id)
     {
-        try {
+        try
+        {
             $client = new Client();
             $response = $client->request('GET',
                 'https://www.googleapis.com/youtube/v3/channels',
@@ -79,15 +84,17 @@ class APIManager
 
             return json_decode($response);
 
-        } catch (\Exception $e) {
-
+        }
+        catch (\Exception $e)
+        {
             return false;
         }
     }
 
     public function getVideoData($id)
     {
-        try {
+        try
+        {
             $client = new Client();
             $response = $client->request('GET',
                 'https://www.googleapis.com/youtube/v3/videos',
@@ -104,15 +111,17 @@ class APIManager
 
             return json_decode($response);
 
-        } catch (\Exception $e) {
-
+        }
+        catch (\Exception $e)
+        {
             return false;
         }
     }
 
     public function searchCurrencyExchangeValues()
     {
-        try {
+        try
+        {
             $client = new Client();
             $response = $client->request('GET',
                 'https://api.exchangeratesapi.io/latest',
@@ -128,8 +137,9 @@ class APIManager
 
             return json_decode($response);
 
-        } catch (\Exception $e) {
-
+        }
+        catch (\Exception $e)
+        {
             return false;
         }
     }

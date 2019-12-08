@@ -123,14 +123,14 @@ class PageData
                                 'todayViews' => $calculatedVideoDailyData['todayViews']
                             ],
                             'calculatedEarnings' => [
-                                'yesterdayViews' => ConvertData::addCurrency(ConvertData::exchangeCurrency($channelVideoFactorCurrency, $currencyExchange, $videoDaily['yesterday']['earned']), $channelVideoFactorCurrency),
-                                'todayViews' => ConvertData::addCurrency(ConvertData::exchangeCurrency($channelVideoFactorCurrency, $currencyExchange, $videoDaily['today']['earned']), $channelVideoFactorCurrency)
+                                'yesterdayViews' => ConvertData::addCurrency($dailyYesterday, $channelVideoFactorCurrency),
+                                'todayViews' => ConvertData::addCurrency($dailyToday, $channelVideoFactorCurrency)
                             ]
                         ],
                         'average' => [
                             'calculatedViews' => [
-                                'lastMonthViews' => ConvertData::calculateAverage($videoMonthData, 'views'),
-                                'lastYearViews' => ConvertData::calculateAverage($videoYearData, 'views')
+                                'lastMonthViews' => number_format(ConvertData::calculateAverage($videoMonthData, 'views'), 2),
+                                'lastYearViews' => number_format(ConvertData::calculateAverage($videoYearData, 'views'), 2)
                             ],
                             'calculatedEarnings' => [
                                 'lastMonthViews' => ConvertData::addCurrency($avgMonth, $channelVideoFactorCurrency),

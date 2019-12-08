@@ -61,7 +61,8 @@ class ConvertData
 
     public static function exchangeCurrency($currency, $currencyExchange, $value)
     {
-        switch($currency) {
+        switch($currency)
+        {
             case 'HRK':
                 $currentState = $currencyExchange->rates->HRK;
                 return $value * $currentState;
@@ -78,7 +79,8 @@ class ConvertData
 
     public static function addCurrency($value, $currency)
     {
-        switch($currency) {
+        switch($currency)
+        {
             case 'HRK':
                 return number_format($value, 2) . 'kn';
                 break;
