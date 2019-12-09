@@ -46,6 +46,8 @@ class PageData
                 'views' => $channelCurrentData->items[0]->statistics->viewCount
             ];
 
+            $channelMode = $dbChannel->mode;
+
             $channelDailyData = new ChannelDailyData($channelId);
             $channelDaily = $channelDailyData->get();
 
@@ -73,7 +75,16 @@ class PageData
                 $channelVideoFactorCurrency = $dbVideo->factor_currency;
                 $channelVideoEarningFactor = $dbVideo->earning_factor;
 
-                $totalEarningsOnViewsInDollars = (($videoViews - $dbVideo->tracked_zero) / 1000) * $channelVideoEarningFactor;
+                if($channelMode == 'all_views')
+                {
+                    $videoViewsBasedOnMode = $videoViews;
+                }
+                else
+                {
+                    $videoViewsBasedOnMode = $videoViews - $dbVideo->tracked_zero;
+                }
+
+                $totalEarningsOnViewsInDollars = ($videoViewsBasedOnMode / 1000) * $channelVideoEarningFactor;
                 $totalEarningsOnMonthlyViewsInDollars = (($videoViews - $dbVideo->month_zero) / 1000) * $channelVideoEarningFactor;
                 $totalBasedOnViews = ConvertData::exchangeCurrency($channelVideoFactorCurrency, $currencyExchange, $totalEarningsOnViewsInDollars);
                 $totalBasedOnMonthlyViews = ConvertData::exchangeCurrency($channelVideoFactorCurrency, $currencyExchange, $totalEarningsOnMonthlyViewsInDollars);
@@ -101,6 +112,7 @@ class PageData
                     'name' => $dbVideo->name,
                     'tracked_zero' => $dbVideo->tracked_zero,
                     'month_zero' => $dbVideo->month_zero,
+                    'treshold_zero' => $dbVideo->treshold_zero,
                     'earning_factor' => $channelVideoEarningFactor,
                     'factor_currency' => $channelVideoFactorCurrency,
                     'treshold' => $dbVideo->treshold,
@@ -109,7 +121,7 @@ class PageData
                     'video_data' => [
                         'total' => [
                             'calculatedViews' => [
-                                'views' => $videoViews,
+                                'views' => ($channelMode == 'mixed' ) ? $videoViews : $videoViewsBasedOnMode,
                                 'monthlyViews' => $videoViews - $dbVideo->month_zero
                             ],
                             'calculatedEarnings' => [
@@ -158,8 +170,9 @@ class PageData
                         $dailyCalculatedYesterdayEarning += $dailyYesterdayExchanged;
                         $dailyCalculatedTodayEarning += $dailyTodayExchanged;
 
-                        $avgMonthExchanged = ConvertData::exchangeCurrency($calculationCurrency, $currencyExchange, $channelVideo['video_data']['average']['calculatedEarnings']['lastMonthViews']);
-                        $avgYearExchanged = ConvertData::exchangeCurrency($calculationCurrency, $currencyExchange, $channelVideo['video_data']['average']['calculatedEarnings']['lastYearViews']);
+                        $avgMonthExchanged = ConvertData::exchangeCurrency($calculationCurrency, $currencyExchange, $avgMonth);
+                        $avgYearExchanged = ConvertData::exchangeCurrency($calculationCurrency, $currencyExchange, $avgYear);
+
                         $avgCalculatedMonthEarning += $avgMonthExchanged;
                         $avgCalculatedYearEarning += $avgYearExchanged;
                     }
@@ -175,7 +188,15 @@ class PageData
                         $avgCalculatedYearEarning += ConvertData::exchangeCurrency($channelVideoFactorCurrency, $currencyExchange, ConvertData::calculateAverage($videoYearData, 'earnings'));
                     }
 
-                    $totalCalculatedViews += $videoViews;
+                    if($channelMode == 'mixed')
+                    {
+                        $totalCalculatedViews += $videoViews;
+                    }
+                    else
+                    {
+                        $totalCalculatedViews += $videoViewsBasedOnMode;
+                    }
+
                     $totalCalculatedMonthlyViews = ($totalCalculatedMonthlyViews + $videoViews) - $dbVideo->month_zero;
 
                     $dailyCalculatedYesterdayViews += $calculatedVideoDailyData['yesterdayViews'];
@@ -198,6 +219,7 @@ class PageData
                     'id' => $channelId,
                     'name' => $dbChannel->name,
                     'tracking' => $dbChannel->tracking,
+                    'mode' => $dbChannel->mode,
                     'channel_videos' => $channelVideos,
                     'channel_data' => [
                         'total' => [

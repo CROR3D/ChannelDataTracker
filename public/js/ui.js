@@ -10,6 +10,7 @@ $(document).ready(function() {
     caclulateReachedTresholds();
     enableTooltips();
     trackingButtons();
+    resetButton();
     updateValidation();
     deleteSafetyCountdown();
 });
@@ -166,7 +167,9 @@ function deleteCountdown(e) {
 function closePopUp() {
     let elements = document.querySelectorAll('.channel-title'),
         channelDelete = document.getElementById('channelSettingsDelete'),
-        videoDelete = document.getElementById('videoSettingsDelete');
+        videoDelete = document.getElementById('videoSettingsDelete'),
+        resetTresholds = document.getElementById('channelSettingsResetTresholds'),
+        resetTresholdsHidden = document.getElementById('channelSettingsResetAllTresholds');
 
     $(document).on('click', '.close-btn', function(e) {
         const parent = e.target.parentNode.parentNode.parentNode;
@@ -174,6 +177,9 @@ function closePopUp() {
             el.classList.add('hvr-wobble-horizontal');
         });
         $(parent).hide();
+        resetTresholds.value = 'false';
+        resetTresholds.style.color = '#212529';
+        resetTresholdsHidden.value = 'false';
         $('.container-wrapper').css('overflowY','auto');
         clearVideoData();
         let isInCountdown = channelDelete.classList.contains('safety-countdown') || videoDelete.classList.contains('safety-countdown'),
@@ -207,7 +213,8 @@ function dropdownChannel() {
 }
 
 function caclulateReachedTresholds() {
-    let channels = document.getElementsByClassName('channel');
+    let channels = document.getElementsByClassName('channel'),
+        channelEditData = document.getElementsByClassName('edit-channel');
 
     for(let i = 0; i < channels.length; i++) {
         let reached = channels[i].lastElementChild.getElementsByTagName('span'),
@@ -216,29 +223,49 @@ function caclulateReachedTresholds() {
             channelData = channels[i].nextElementSibling.lastElementChild,
             videoData = channelData.children,
             currentTreshold = 0,
-            totalTreshold = 0;
+            totalTreshold = 0,
+            currentTresholdViews = 0,
+            totalTresholdViews = 0,
+            mode = null;
 
-            for(let x = 0; x < videoData.length; x++) {
-                if(videoData[x].classList.contains('video-row')) {
-                    let currentTresholdViews = parseFloat(videoData[x].children[3].getElementsByTagName('span')[0].innerText),
-                        totalTresholdViews = parseFloat(videoData[x].children[3].getElementsByTagName('span')[1].innerText);
+        for(let x = 0; x < videoData.length; x++) {
+            if(videoData[x].classList.contains('video-row')) {
+                let currentVideoData = JSON.parse(videoData[x].dataset.video);
 
-                    totalTreshold++;
+                let videoChannelId = currentVideoData.channel_id;
 
-                    if(currentTresholdViews >= totalTresholdViews) currentTreshold++;
+                for(let y = 0; y < channelEditData.length; y++) {
+                    if(mode) continue;
+
+                    let channelParsedData = JSON.parse(channelEditData[y].dataset.channel);
+
+                    if(videoChannelId == channelParsedData.id) mode = channelParsedData.mode;
                 }
+
+                if(mode != 'all_views') {
+                    currentTresholdViews = parseFloat(videoData[x].children[3].getElementsByTagName('span')[0].innerText);
+                    totalTresholdViews = parseFloat(videoData[x].children[3].getElementsByTagName('span')[1].innerText);
+                } else {
+                    currentTresholdViews = parseFloat(videoData[x].children[1].getElementsByTagName('span')[0].innerText);
+                    totalTresholdViews = parseFloat(videoData[x].children[3].getElementsByTagName('span')[0].innerText);
+                }
+
+                totalTreshold++;
+
+                if(currentTresholdViews >= totalTresholdViews) currentTreshold++;
             }
+        }
 
-            current.className = "";
+        current.className = "";
 
-            if(currentTreshold >= totalTreshold && currentTreshold != 0) {
-                current.classList.add('text-success');
-            } else if (currentTreshold < totalTreshold) {
-                current.classList.add('text-danger');
-            }
+        if(currentTreshold >= totalTreshold && currentTreshold != 0) {
+            current.classList.add('text-success');
+        } else if (currentTreshold < totalTreshold) {
+            current.classList.add('text-danger');
+        }
 
-            current.innerText = currentTreshold;
-            total.innerText = totalTreshold;
+        current.innerText = currentTreshold;
+        total.innerText = totalTreshold;
     }
 }
 
@@ -252,19 +279,44 @@ function trackingButtons() {
     });
 }
 
+function resetButton() {
+    $(document).on('click', '.reset-btn', function(e) {
+        e.preventDefault();
+        let resetTresholds = document.getElementById('channelSettingsResetTresholds'),
+            resetTresholdsHidden = document.getElementById('channelSettingsResetAllTresholds');
+
+        if(resetTresholds.value == 'false') {
+            resetTresholds.value = 'true';
+            resetTresholds.style.color = '#dc3545';
+            resetTresholdsHidden.value = 'true';
+        } else {
+            resetTresholds.value = 'false';
+            resetTresholds.style.color = '#212529';
+            resetTresholdsHidden.value = 'false';
+        }
+    });
+}
+
 function channelDataUpdate(button) {
     let data = JSON.parse(button.dataset.channel),
         title = document.getElementById('channelSettingsTitle'),
         trackingButtons = document.getElementsByClassName('tracking-btn'),
+        trackingMode = document.getElementById('channelSettingsTrackingMode'),
         trackingHidden = document.getElementById('channelSettingsTracking');
 
     $('.tracking-btn').removeClass("tracking-selected");
     title.value = data.name;
+
     for(var i = 0; i < trackingButtons.length; i++) {
         if((trackingButtons[i].innerText.charAt(0).toLowerCase() + trackingButtons[i].innerText.slice(1)) === data.tracking) {
             trackingButtons[i].classList.add('tracking-selected');
         }
     }
+
+    for(let i = 0; i < trackingMode.length; i++) {
+        if(trackingMode.options[i].value === data.mode) trackingMode.options[i].selected = true;
+    }
+
     trackingHidden.value = data.tracking;
 }
 

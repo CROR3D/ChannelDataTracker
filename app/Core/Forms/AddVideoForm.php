@@ -64,6 +64,7 @@ class AddVideoForm extends Form
             'name' => ($this->data['videoSettingsTitle'] === null) ? $video->items[0]->snippet->title : $this->data['videoSettingsTitle'],
             'tracked_zero' => $video->items[0]->statistics->viewCount,
             'month_zero' => $video->items[0]->statistics->viewCount,
+            'treshold_zero' => $video->items[0]->statistics->viewCount,
             'earning_factor' => $this->data['videoSettingsEarningFactor'],
             'factor_currency' => $this->data['videoSettingsFactorCurrency'],
             'treshold' => $this->data['videoSettingsTreshold'],

@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto:300');
 
-html { overflow-y: scroll; }
+/* html { overflow-y: scroll; } */
 
 html,
 body,
@@ -10,8 +10,8 @@ body,
 }
 
 .top-header {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
+    margin: 0 !important;
+    padding: 10px;
 }
 
 label,
@@ -151,7 +151,7 @@ label,
 
 #channel-settings-form-wrapper {
     width: 400px;
-    height: 540px;
+    height: 630px;
 }
 
 #video-info-form-wrapper,
@@ -260,6 +260,7 @@ label,
     cursor: pointer;
 }
 
+#channelSettingsTrackingMode:hover,
 #channelSettingsFactorCurrency:hover,
 #videoSettingsFactorCurrency:hover {
     cursor: pointer;
@@ -295,6 +296,12 @@ label,
     color: #aaa;
 }
 
+.reset-btn:focus,
+.tracking-btn:focus {
+    outline: none;
+}
+
+.reset-btn,
 .tracking-btn {
     margin: 0 15px;
     padding: 7px 0;
@@ -304,6 +311,7 @@ label,
     border-radius: 5px;
 }
 
+.reset-btn:hover,
 .tracking-btn:hover {
     cursor: pointer;
 }
@@ -459,14 +467,6 @@ input[type=radio] {
         padding-right: 0px;
     }
 
-    .data-user {
-        margin-left: 15px;
-    }
-
-    .data-connection {
-        margin-right: 15px;
-    }
-
     .jumbotron {
         border-style: none;
         border-radius: 0;
@@ -477,7 +477,7 @@ input[type=radio] {
     }
 
     #channel-settings-form-wrapper {
-        height: 580px;
+        height: 720px;
     }
 
     #video-settings-form-wrapper {
@@ -489,6 +489,10 @@ input[type=radio] {
         margin-bottom: 5px;
         border-bottom-right-radius: 0;
         border-bottom-left-radius: 0;
+    }
+
+    #channelSettingsTrackingMode {
+        margin-bottom: 10px;
     }
 
     #channelSettingsFactorCurrency,

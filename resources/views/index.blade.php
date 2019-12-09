@@ -90,7 +90,10 @@
                         @if($connectionStatus == 'ACTIVE')
                             @if(count($data) > 0)
                                 @foreach($data as $channel)
-                                    <?php $tracking = $channel['tracking'] ?>
+                                    <?php
+                                        $tracking = $channel['tracking'];
+                                        $mode = $channel['mode'];
+                                    ?>
                                     <div class="row channel text-center py-3">
                                         <div class="col hvr-wobble-horizontal channel-title">{{ str_limit($channel['name'], $limit = 37, $end = ' ...') }}</div>
                                         <div class="col">
@@ -139,7 +142,6 @@
                                             <div class="element-group">
                                                 <input class="video-id p-2 mr-3" name="video_id" type="text" autocomplete="off">
                                                 <button class="btn-custom btn-custom-secondary add-video" name="add_video_popup" value="{{ $channel['id'] }}">Add <span>Video</span></button>
-                                                <button class="btn-custom btn-custom-tracking ml-3">Tracking zero: <span>TRUE</span></button>
                                                 <button class="btn-custom btn-custom-secondary edit-channel" name="edit-channel" value="{{ $channel['id'] }}" data-channel="{{ json_encode($channel) }}">Channel <span>Settings</span></button>
                                             </div>
                                         </div>
@@ -270,9 +272,23 @@
                                                     </div>
                                                     <div class="col">
                                                         <p class="col-description">TRESHOLD: </p>
-                                                        <span class="{{ ($video['video_data']['total']['calculatedViews']['views'] - $video['tracked_zero'] < $video['treshold']) ? 'text-danger' : 'text-success' }}">{{ $video['video_data']['total']['calculatedViews']['views'] - $video['tracked_zero'] }}</span>
-                                                        <p class="slash">/</p>
-                                                        <span>{{ $video['treshold'] }}</span>
+                                                        @if($mode != 'all_views')
+                                                                @if($mode == 'tracking_zero')
+                                                                    <span class="{{ ($video['video_data']['total']['calculatedViews']['views'] < $video['treshold']) ? 'text-danger' : 'text-success' }}">
+                                                                        {{ $video['video_data']['total']['calculatedViews']['views'] }}
+                                                                    </span>
+                                                                @else
+                                                                    <span class="{{ ($video['video_data']['total']['calculatedViews']['views'] - $video['tracked_zero'] < $video['treshold']) ? 'text-danger' : 'text-success' }}">
+                                                                        {{ $video['video_data']['total']['calculatedViews']['views'] - $video['tracked_zero'] }}
+                                                                    </span>
+                                                                @endif
+                                                            <p class="slash">/</p>
+                                                        @endif
+                                                        @if($mode != 'all_views')
+                                                            <span>{{ $video['treshold'] }}</span>
+                                                        @else
+                                                            <span class="single-treshold {{ ($mode == 'all_views' && ($video['video_data']['total']['calculatedViews']['views'] >= $video['treshold'])) ? 'text-success' : 'text-danger' }}">{{ $video['treshold'] }}</span>
+                                                        @endif
                                                     </div>
                                                     <div class="col last-row">
                                                         <button class="btn-custom btn-custom-secondary info-hover {{ ($video['note'] !== null) ? 'text-custom-success' : '' }}" data-toggle="tooltip" data-history="{{ $video['history'] }}" data-placement="bottom" title="{{ $video['note'] }}">

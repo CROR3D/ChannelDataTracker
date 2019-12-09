@@ -17,6 +17,7 @@ class CreateChannelsTable extends Migration
             $table->string('id')->primary();
             $table->string('name');
             $table->string('tracking')->default('total');
+            $table->string('mode')->default('all_views');
             $table->timestamps();
         });
     }

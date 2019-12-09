@@ -14,6 +14,7 @@ class Video extends Model
         'name',
         'tracked_zero',
         'month_zero',
+        'treshold_zero',
         'earning_factor',
         'factor_currency',
         'treshold',

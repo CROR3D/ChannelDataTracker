@@ -2,6 +2,7 @@
 
 namespace App\Core\Forms;
 
+use APIManager;
 use App\Core\Forms\Form;
 use App\Models\Channel;
 use App\Models\Video;
@@ -31,22 +32,37 @@ class UpdateChannelForm extends Form
 
         $channelData = [
             'name' => $this->data['channelSettingsTitle'],
-            'tracking' => $this->data['channelSettingsTracking']
+            'tracking' => $this->data['channelSettingsTracking'],
+            'mode' => $this->data['channelSettingsTrackingMode']
         ];
+
+        if($this->data['channelSettingsResetAllTresholds'] === 'true')
+        {
+            $allVideos = APIManager::getVideosData();
+
+            foreach ($allVideos as $video) {
+                $videoId = $video->items[0]->id;
+                $videoNewTresholdZero = $video->items[0]->statistics->viewCount;
+                $resetTreshold = [ 'treshold_zero' => $videoNewTresholdZero ];
+
+                $dbVideo = Video::find($videoId);
+                $dbVideo->updateVideo($resetTreshold);
+            }
+        }
 
         if($this->data['channelSettingsEarningFactor'])
         {
-            $allVideoData = [
+            $earningSettings = [
                 'earning_factor' => $this->data['channelSettingsEarningFactor'],
                 'factor_currency' => $this->data['channelSettingsFactorCurrency']
             ];
 
             $allChannelVideos = Video::where('channel_id', $channelId)->get();
 
-            foreach ($allChannelVideos as $video)
+            foreach ($allChannelVideos as $dbVideo)
             {
-                $video = Video::find($video->id);
-                $video->updateVideo($allVideoData);
+                $dbVideo = Video::find($dbVideo->id);
+                $dbVideo->updateVideo($earningSettings);
             }
         }
 

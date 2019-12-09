@@ -11,7 +11,8 @@ class Channel extends Model
     protected $fillable = [
         'id',
         'name',
-        'tracking'
+        'tracking',
+        'mode'
     ];
 
     public function saveChannel($channel)

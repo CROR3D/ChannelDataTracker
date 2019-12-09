@@ -17,7 +17,7 @@
                         <button class="col tracking-btn" value="average">Average</button>
                     </div>
                     <label>Set earning factor per 1000 views for all channel videos</label>
-                    <div class="row mb-5">
+                    <div class="row mb-4">
                         <div class="col-md-8">
                             <input id="channelSettingsEarningFactor" class="form-control" name="channelSettingsEarningFactor" type="text">
                         </div>
@@ -29,6 +29,17 @@
                             </select>
                         </div>
                     </div>
+                    <label>Change Tracking Mode</label>
+                    <div class="row mb-5">
+                        <div class="col-md-6">
+                            <select id="channelSettingsTrackingMode" class="form-control" name="channelSettingsTrackingMode">
+                                <option value="all_views">All Views</option>
+                                <option value="tracking_zero">Tracking Zero</option>
+                                <option value="mixed">Mixed</option>
+                            </select>
+                        </div>
+                        <button id="channelSettingsResetTresholds" class="col reset-btn" value="false">Reset Tresholds</button>
+                    </div>
                     <div class="row">
                         <div class="col">
                             <button id="channelSettingsUpdate" class="btn-custom btn-custom-secondary btn-block" name="formName" type="submit" value="UpdateChannelForm">Update Channel</button>
@@ -39,6 +50,7 @@
                     </div>
                     <input id="channelSettingsChannelId" name="channelSettingsChannelId" value="" type="hidden">
                     <input id="channelSettingsTracking" name="channelSettingsTracking" value="" type="hidden">
+                    <input id="channelSettingsResetAllTresholds" name="channelSettingsResetAllTresholds" value="false" type="hidden">
                 </div>
                 <input name="_token" value="{{ csrf_token() }}" type="hidden">
             </form>
