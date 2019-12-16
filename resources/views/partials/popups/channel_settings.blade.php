@@ -5,7 +5,7 @@
         </div>
         <h3 id="popup-channel-title" class="text-center my-2">Update Channel</h3>
         <div class="p-3">
-            <form id="channelSettingsForm" class="form mb-4 p-0" method="post" action="{{ route('channels') }}">
+            <form id="channelSettingsForm" class="form mb-4 p-0" method="post" action="{{ route('forms') }}">
                 <div class="form-group text-left">
                     <label>Change title</label>
                     <input id="channelSettingsTitle" class="form-control app-form-input" name="channelSettingsTitle" type="text">

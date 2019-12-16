@@ -9,7 +9,7 @@ use App\Http\Controllers\FormController;
 
 class ChannelController extends Controller
 {
-    public function index()
+    public function channels()
     {
         $submitted = session()->get('submitted');
         $connectionStatus = 'ACTIVE';
@@ -28,7 +28,7 @@ class ChannelController extends Controller
 
         if(!$pageData && !is_array($pageData)) $connectionStatus = 'LOST';
 
-        return view('index')->with(['searchData' => $searchData, 'data' => $pageData, 'connectionStatus' => $connectionStatus]);
+        return view('channels')->with(['searchData' => $searchData, 'data' => $pageData, 'connectionStatus' => $connectionStatus]);
     }
 
     public function executeForm(Request $request)
@@ -47,7 +47,7 @@ class ChannelController extends Controller
             {
                 if($message = $form->getMessage()) session()->flash('success', $message);
 
-                return redirect()->route('index')->with(['submitted' => $submitted]);
+                return redirect()->route('channels')->with(['submitted' => $submitted]);
             }
             else
             {
@@ -56,6 +56,6 @@ class ChannelController extends Controller
             }
         }
 
-        return redirect()->route('index');
+        return redirect()->route('channels');
     }
 }
