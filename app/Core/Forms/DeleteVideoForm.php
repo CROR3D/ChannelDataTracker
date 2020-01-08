@@ -2,6 +2,7 @@
 
 namespace App\Core\Forms;
 
+use Sentinel;
 use App\Core\Forms\Form;
 use App\Models\Video;
 
@@ -23,7 +24,16 @@ class DeleteVideoForm extends Form
     {
         $videoId = $this->data['videoSettingsVideoId'];
 
-        $video = Video::find($videoId);
+        if(Sentinel::check())
+        {
+            $userId = Sentinel::getUser()->id;
+        }
+        else
+        {
+            $userId = null;
+        }
+
+        $video = Video::where('id', $videoId)->where('user_id', $userId)->first();
 
         $video->delete();
 

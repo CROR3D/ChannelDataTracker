@@ -2,6 +2,7 @@
 
 namespace App\Core\Forms;
 
+use Sentinel;
 use APIManager;
 use Carbon\Carbon;
 use App\Core\Forms\Form;
@@ -27,6 +28,15 @@ class AddChannelForm extends Form
         $channelId = $this->data['addChannelID'];
         $channelAPIData = APIManager::getChannelData($channelId);
 
+        if(Sentinel::check())
+        {
+            $userId = Sentinel::getUser()->id;
+        }
+        else
+        {
+            $userId = null;
+        }
+
         if(!$channelAPIData)
         {
             $this->setMessage('Can not add channel by ID! Data connection lost!');
@@ -34,9 +44,16 @@ class AddChannelForm extends Form
             return false;
         }
 
-        $channelData = $channelAPIData->items[0];
+        $channelExists = Channel::where('id', $channelId)->where('user_id', $userId)->exists();
 
-        $channelId = $channelData->id;
+        if($channelExists)
+        {
+            $this->setMessage('Channel is already tracked!');
+
+            return false;
+        }
+
+        $channelData = $channelAPIData->items[0];
         $getToday = Carbon::now()->day;
 
         $currentViews = $channelData->statistics->viewCount;
@@ -45,10 +62,19 @@ class AddChannelForm extends Form
 
         $channel = [
             'id' => $channelId,
+            'user_id' => $userId,
             'name' => $channelData->snippet->title
         ];
 
+        $newChannel = new Channel;
+        $newChannel->saveChannel($channel);
+
+        $dbChannel = Channel::where('id', $channelId)->where('user_id', $userId)->first();
+        $dbChannelId = $dbChannel->db_id;
+
         $dailyData = [
+            'channel_db_id' => $dbChannelId,
+            'user_id' => $userId,
             'channel_id' => $channelId,
             'day' . $getToday => [
                 'currentViews' => $currentViews,
@@ -59,9 +85,6 @@ class AddChannelForm extends Form
                 'views' => 0
             ]
         ];
-
-        $newChannel = new Channel;
-        $newChannel->saveChannel($channel);
 
         $newChannelDailyTracker = new ChannelDailyTracker;
         $newChannelDailyTracker->saveChannelDailyTracker($dailyData);

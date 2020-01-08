@@ -2,11 +2,13 @@
 
 namespace App\Core\Data;
 
+use Sentinel;
 use APIManager;
 use Carbon\Carbon;
 use App\Core\Data\Daily\ChannelDailyData;
 use App\Core\Data\Daily\VideoDailyData;
 use App\Core\Data\ConvertData;
+use App\Models\User;
 use App\Models\Channel;
 use App\Models\Video;
 use App\Models\History;
@@ -15,7 +17,17 @@ class PageData
 {
     public static function get()
     {
-        $channels = Channel::all();
+        if($user = Sentinel::check())
+        {
+            $userId = $user->id;
+        }
+        else
+        {
+            $userId = null;
+        }
+
+        $channels = Channel::where('user_id', $userId)->get();
+        //dd(User::find(1)->channels);
         $day = Carbon::now()->day;
         $data = $channelVideos = [];
         $error = false;
@@ -48,10 +60,10 @@ class PageData
 
             $channelMode = $dbChannel->mode;
 
-            $channelDailyData = new ChannelDailyData($channelId);
+            $channelDailyData = new ChannelDailyData($channelId, $userId);
             $channelDaily = $channelDailyData->get();
 
-            $videos = Video::where('channel_id', $channelId)->get();
+            $videos = Video::where('channel_id', $channelId)->where('user_id', $userId)->get();
             $videoCount = count($videos);
             $calculationCurrency = null;
 
@@ -60,7 +72,7 @@ class PageData
                 $videoCurrentData = APIManager::getVideoData($dbVideo->id);
                 $videoViews =  $videoCurrentData->items[0]->statistics->viewCount;
 
-                $videoDailyData = new VideoDailyData($dbVideo->id);
+                $videoDailyData = new VideoDailyData($dbVideo->id, $userId);
                 $videoDaily = $videoDailyData->get();
 
                 $calculatedVideoDailyData = [
@@ -96,18 +108,20 @@ class PageData
 
                 $videoMonthData = $videoDailyData->getMonthData();
                 $videoMonthData = $videoMonthData->getAttributes();
-                $videoMonthData = array_slice($videoMonthData, 1, -2);
+                $videoMonthData = array_slice($videoMonthData, 4, -2);
                 $videoYearData = $videoDailyData->getYearData();
                 $videoYearData = $videoYearData->getAttributes();
-                $videoYearData = array_slice($videoYearData, 2, -2);
+                $videoYearData = array_slice($videoYearData, 4, -2);
 
-                $avgMonth = ConvertData::exchangeCurrency($channelVideoFactorCurrency, $currencyExchange, ConvertData::calculateAverage($videoMonthData, 'earnings'), $channelVideoFactorCurrency);
-                $avgYear = ConvertData::exchangeCurrency($channelVideoFactorCurrency, $currencyExchange, ConvertData::calculateAverage($videoYearData, 'earnings'), $channelVideoFactorCurrency);
+                $avgMonth = ConvertData::exchangeCurrency($channelVideoFactorCurrency, $currencyExchange, ConvertData::calculateAverage($videoMonthData, 'earned'), $channelVideoFactorCurrency);
+                $avgYear = ConvertData::exchangeCurrency($channelVideoFactorCurrency, $currencyExchange, ConvertData::calculateAverage($videoYearData, 'earned'), $channelVideoFactorCurrency);
 
                 $history = History::where('video_id', $dbVideo->id)->first();
 
                 $channelVideo = [
+                    'db_id' => $dbVideo->db_id,
                     'id' => $dbVideo->id,
+                    'channel_db_id' => $dbVideo->channel_db_id,
                     'channel_id' => $dbVideo->channel_id,
                     'name' => $dbVideo->name,
                     'tracked_zero' => $dbVideo->tracked_zero,
@@ -216,6 +230,7 @@ class PageData
 
             $channelData = array(
                 $channelId => [
+                    'db_id' => $dbChannel->db_id,
                     'id' => $channelId,
                     'name' => $dbChannel->name,
                     'tracking' => $dbChannel->tracking,

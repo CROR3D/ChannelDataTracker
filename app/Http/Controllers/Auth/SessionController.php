@@ -20,7 +20,8 @@ class SessionController extends Controller
      */
     public function __construct(AuthManager $authManager)
     {
-        $this->middleware('sentinel.guest', ['except' => 'getLogout']);
+        $this->middleware('sentinel.guest')->only('postLogin');
+        $this->middleware('channels')->only('getLogin');
         $this->authManager = $authManager;
     }
 
@@ -54,7 +55,7 @@ class SessionController extends Controller
 
         // Attempt the Login
         $result = $this->authManager->authenticate($credentials, $remember);
-        
+
         // Return the appropriate response
         $path = session()->pull('url.intended', route('channels'));
         return $result->dispatch($path);

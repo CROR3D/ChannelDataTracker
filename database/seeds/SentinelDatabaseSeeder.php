@@ -19,17 +19,10 @@ class SentinelDatabaseSeeder extends Seeder
             'password' => 'password'
         ));
 
-        $user = Sentinel::getUserRepository()->create(array(
-            'email'    => 'user@user.com',
-            'password' => 'password'
-        ));
-
         // Create Activations
         DB::table('activations')->truncate();
         $code = Activation::create($admin)->code;
         Activation::complete($admin, $code);
-        $code = Activation::create($user)->code;
-        Activation::complete($user, $code);
 
         // Create Roles
         $administratorRole = Sentinel::getRoleRepository()->create(array(
@@ -62,6 +55,5 @@ class SentinelDatabaseSeeder extends Seeder
 
         // Assign Roles to Users
         $administratorRole->users()->attach($admin);
-        $subscriberRole->users()->attach($user);
     }
 }

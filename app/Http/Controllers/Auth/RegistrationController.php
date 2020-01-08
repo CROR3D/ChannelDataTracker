@@ -68,7 +68,9 @@ class RegistrationController extends Controller
         $code = $result->activation->getCode();
         // $email = $result->user->email;
         // Mail::to($email)->queue(new CentaurWelcomeEmail($email, $code, 'Your account has been created!'));
+
         $this->getActivate($request, $code);
+
         // Ask the user to check their email for the activation link
         $result->setMessage('Registration complete.  Please check your email for activation instructions.');
 

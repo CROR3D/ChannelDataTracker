@@ -9,9 +9,9 @@ use App\Models\History;
 
 class VideoDailyData extends DailyData
 {
-    public function __construct($id)
+    public function __construct($id, $userId)
     {
-        parent::__construct($id);
+        parent::__construct($id, $userId);
     }
 
     public function get()
@@ -48,11 +48,11 @@ class VideoDailyData extends DailyData
 
     public function getMonthData()
     {
-        return VideoDailyTracker::where('video_id', $this->id)->first();
+        return VideoDailyTracker::where('video_id', $this->id)->where('user_id', $this->userId)->first();
     }
 
     public function getYearData()
     {
-        return History::where('video_id', $this->id)->first();
+        return History::where('video_id', $this->id)->where('user_id', $this->userId)->first();
     }
 }

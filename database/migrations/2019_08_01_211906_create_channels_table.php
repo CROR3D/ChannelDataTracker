@@ -14,11 +14,15 @@ class CreateChannelsTable extends Migration
     public function up()
     {
         Schema::create('channels', function (Blueprint $table) {
-            $table->string('id')->primary();
+            $table->increments('db_id');
+            $table->integer('user_id')->nullable();
+            $table->string('id');
             $table->string('name');
             $table->string('tracking')->default('total');
             $table->string('mode')->default('all_views');
             $table->timestamps();
+
+            $table->engine = 'InnoDB';
         });
     }
 

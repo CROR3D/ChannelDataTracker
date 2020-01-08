@@ -37,12 +37,7 @@ Route::get('password/reset', 'Auth\PasswordController@getRequest')->name('auth.p
 Route::post('password/reset', 'Auth\PasswordController@postRequest')->name('auth.password.request.attempt');
 
 // Users
-Route::resource('users', 'UserController');
+// Route::resource('users', 'UserController');
 
 // Roles
-Route::resource('roles', 'RoleController');
-
-// Dashboard
-Route::get('dashboard', function () {
-    return view('Centaur::dashboard');
-})->name('dashboard');
+// Route::resource('roles', 'RoleController');

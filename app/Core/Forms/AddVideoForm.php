@@ -2,9 +2,11 @@
 
 namespace App\Core\Forms;
 
+use Sentinel;
 use APIManager;
 use Carbon\Carbon;
 use App\Core\Forms\Form;
+use App\Models\Channel;
 use App\Models\Video;
 use App\Models\VideoDailyTracker;
 use App\Models\History;
@@ -31,7 +33,16 @@ class AddVideoForm extends Form
         $today = Carbon::now();
         $day = $today->day;
 
-        $videoExists = Video::where('id', $videoId)->exists();
+        if(Sentinel::check())
+        {
+            $userId = Sentinel::getUser()->id;
+        }
+        else
+        {
+            $userId = null;
+        }
+
+        $videoExists = Video::where('id', $videoId)->where('user_id', $userId)->exists();
 
         if($videoExists)
         {
@@ -58,8 +69,13 @@ class AddVideoForm extends Form
             return false;
         }
 
+        $dbChannel = Channel::where('id', $channelId)->where('user_id', $userId)->first();
+        $dbChannelId = $dbChannel->db_id;
+
         $addVideo = [
             'id' => $videoId,
+            'channel_db_id' => $dbChannelId,
+            'user_id' => $userId,
             'channel_id' => $channelId,
             'name' => ($this->data['videoSettingsTitle'] === null) ? $video->items[0]->snippet->title : $this->data['videoSettingsTitle'],
             'tracked_zero' => $video->items[0]->statistics->viewCount,
@@ -71,7 +87,15 @@ class AddVideoForm extends Form
             'note' => $this->data['videoSettingsNote']
         ];
 
+        $newVideo = new Video;
+        $newVideo->saveVideo($addVideo);
+
+        $dbVideo = Video::where('id', $videoId)->where('user_id', $userId)->first();
+        $dbVideoId = $dbVideo->db_id;
+
         $dailyData = [
+            'video_db_id' => $dbVideoId,
+            'user_id' => $userId,
             'video_id' => $videoId,
             'day' . $day => [
                 'currentViews' => $video->items[0]->statistics->viewCount,
@@ -80,15 +104,14 @@ class AddVideoForm extends Form
             ]
         ];
 
-        $historyData = [
-            'video_id' => $videoId
-        ];
-
-        $newVideo = new Video;
-        $newVideo->saveVideo($addVideo);
-
         $newVideoDailyTracker = new VideoDailyTracker;
         $newVideoDailyTracker->saveVideoDailyTracker($dailyData);
+
+        $historyData = [
+            'video_db_id' => $dbVideoId,
+            'user_id' => $userId,
+            'video_id' => $videoId
+        ];
 
         $newVideoHistory = new History;
         $newVideoHistory->saveHistory($historyData);

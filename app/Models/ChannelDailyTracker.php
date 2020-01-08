@@ -7,12 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class ChannelDailyTracker extends Model
 {
     protected $table = 'channel_daily_tracker';
-    protected $primaryKey = 'channel_id';
-
-    public $incrementing = false;
+    protected $primaryKey = 'db_id';
 
     protected $fillable = [
-        'channel_id',
+        'channel_id', 'user_id', 'channel_db_id',
         'day1', 'day2', 'day3', 'day4', 'day5', 'day6', 'day7', 'day8', 'day9', 'day10',
         'day11', 'day12', 'day13', 'day14', 'day15', 'day16', 'day17', 'day18', 'day19', 'day20',
         'day21', 'day22', 'day23', 'day24', 'day25', 'day26', 'day27', 'day28', 'day29', 'day30', 'day31'
@@ -36,6 +34,21 @@ class ChannelDailyTracker extends Model
 
     public function channel()
     {
-        return $this->belongsTo('App\Models\Channel');
+        return $this->belongsTo('App\Models\Channel', 'db_id', 'channel_db_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo('App\Models\User', 'id');
+    }
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function($channelDailyTracker)
+        {
+            $channelDailyTracker->channel()->delete();
+        });
     }
 }

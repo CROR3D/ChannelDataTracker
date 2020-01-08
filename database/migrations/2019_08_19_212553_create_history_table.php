@@ -14,7 +14,10 @@ class CreateHistoryTable extends Migration
     public function up()
     {
         Schema::create('history', function (Blueprint $table) {
-            $table->string('video_id')->unique();
+            $table->increments('db_id');
+            $table->string('video_db_id');
+            $table->integer('user_id')->nullable();
+            $table->string('video_id');
             $table->integer('tresholds_reached')->default(0);
             $table->string('january')->nullable();
             $table->string('february')->nullable();
@@ -29,6 +32,8 @@ class CreateHistoryTable extends Migration
             $table->string('november')->nullable();
             $table->string('december')->nullable();
             $table->timestamps();
+
+            $table->engine = 'InnoDB';
         });
     }
 

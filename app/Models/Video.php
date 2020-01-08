@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Video extends Model
 {
-    public $incrementing = false;
+    protected $primaryKey = 'db_id';
 
     protected $fillable = [
         'id',
+        'user_id',
+        'channel_db_id',
         'channel_id',
         'name',
         'tracked_zero',
@@ -33,16 +35,32 @@ class Video extends Model
 
     public function channel()
     {
-        return $this->belongsTo('App\Models\Channel');
+        return $this->belongsTo('App\Models\Channel', 'db_id', 'channel_db_id');
     }
 
     public function history()
     {
-        return $this->hasOne('App\Models\History');
+        return $this->hasOne('App\Models\History', 'video_db_id', 'db_id');
     }
 
     public function videoDailyTracker()
     {
-        return $this->hasOne('App\Models\VideoDailyTracker');
+        return $this->hasOne('App\Models\VideoDailyTracker', 'video_db_id', 'db_id');
     }
+
+    public function user()
+    {
+        return $this->belongsTo('App\Models\User', 'id');
+    }
+
+    // public static function boot()
+    // {
+    //     parent::boot();
+    //
+    //     static::deleting(function($video)
+    //     {
+    //         $video->history()->delete();
+    //         $video->videoDailyTracker()->delete();
+    //     });
+    // }
 }

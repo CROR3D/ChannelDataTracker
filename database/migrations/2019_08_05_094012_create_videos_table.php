@@ -14,7 +14,10 @@ class CreateVideosTable extends Migration
     public function up()
     {
         Schema::create('videos', function (Blueprint $table) {
-            $table->string('id')->primary();
+            $table->increments('db_id');
+            $table->string('channel_db_id');
+            $table->integer('user_id')->nullable();
+            $table->string('id');
             $table->string('channel_id');
             $table->string('name');
             $table->integer('tracked_zero');
@@ -25,6 +28,8 @@ class CreateVideosTable extends Migration
             $table->integer('treshold');
             $table->string('note')->nullable();
             $table->timestamps();
+
+            $table->engine = 'InnoDB';
         });
     }
 

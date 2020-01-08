@@ -8,9 +8,9 @@ use App\Models\ChannelDailyTracker;
 
 class ChannelDailyData extends DailyData
 {
-    public function __construct($id)
+    public function __construct($id, $userId)
     {
-        parent::__construct($id);
+        parent::__construct($id, $userId);
     }
 
     public function get()
@@ -27,7 +27,7 @@ class ChannelDailyData extends DailyData
         {
             $getYesterday = $getToday - 1;
         }
-
+        
         $todayData = $dailyTracking->{'day' . $getToday};
         $yesterdayData = $dailyTracking->{'day' . $getYesterday};
 
@@ -49,6 +49,6 @@ class ChannelDailyData extends DailyData
 
     public function getMonthData()
     {
-        return ChannelDailyTracker::where('channel_id', $this->id)->first();
+        return ChannelDailyTracker::where('channel_id', $this->id)->where('user_id', $this->userId)->first();
     }
 }

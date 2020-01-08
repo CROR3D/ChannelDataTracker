@@ -2,6 +2,7 @@
 
 namespace App\Core\Forms;
 
+use Sentinel;
 use App\Core\Forms\Form;
 use App\Models\Channel;
 use App\Models\ChannelDailyTracker;
@@ -27,22 +28,17 @@ class DeleteChannelForm extends Form
     {
         $channelId = $this->data['channelSettingsChannelId'];
 
-        $channel = Channel::find($channelId);
-        $channelDailyData = ChannelDailyTracker::where('channel_id', $channelId)->first();
-        $videos = Video::where('channel_id', $channelId)->get();
-
-        foreach($videos as $video)
+        if(Sentinel::check())
         {
-            $videoDailyData = VideoDailyTracker::where('video_id', $video->id)->first();
-            $videoHistory = History::where('video_id', $video->id)->first();
-
-            $video->delete();
-            $videoDailyData->delete();
-            $videoHistory->delete();
+            $userId = Sentinel::getUser()->id;
+        }
+        else
+        {
+            $userId = null;
         }
 
+        $channel = Channel::where('db_id', $channelId)->first();
         $channel->delete();
-        $channelDailyData->delete();
 
         $this->setMessage('Channel "' . $channel->name . '" successfully deleted!');
 

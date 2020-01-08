@@ -25,7 +25,7 @@
                         </div>
                         <input name="_token" value="{{ csrf_token() }}" type="hidden">
                         <input class="btn-custom btn-custom-secondary btn-block my-3" type="submit" value="Login">
-                        <a class="btn-custom btn-custom-secondary btn-block text-center my-3" href="{{ route('channels') }}">Continue As Guest</a>
+                        <a class="btn-custom btn-custom-secondary btn-block text-center my-3" href="{{ route('channels') }}">Continue To Playground</a>
                         <a class="option-links" href="{{ route('auth.password.request.form') }}" type="submit">Forgot your password?</a>
                         <a class="option-links" href="{{ route('auth.register.form') }}" type="submit">Create an account</a>
                     </fieldset>

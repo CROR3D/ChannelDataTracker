@@ -2,6 +2,7 @@
 
 namespace App\Core\Forms;
 
+use Sentinel;
 use APIManager;
 use App\Core\Forms\Form;
 use App\Models\Channel;
@@ -30,6 +31,15 @@ class UpdateChannelForm extends Form
     {
         $channelId = $this->data['channelSettingsChannelId'];
 
+        if(Sentinel::check())
+        {
+            $userId = Sentinel::getUser()->id;
+        }
+        else
+        {
+            $userId = null;
+        }
+
         $channelData = [
             'name' => $this->data['channelSettingsTitle'],
             'tracking' => $this->data['channelSettingsTracking'],
@@ -45,7 +55,7 @@ class UpdateChannelForm extends Form
                 $videoNewTresholdZero = $video->items[0]->statistics->viewCount;
                 $resetTreshold = [ 'treshold_zero' => $videoNewTresholdZero ];
 
-                $dbVideo = Video::find($videoId);
+                $dbVideo = Video::where('id', $videoId)->where('user_id', $userId)->first();
                 $dbVideo->updateVideo($resetTreshold);
             }
         }
@@ -57,7 +67,7 @@ class UpdateChannelForm extends Form
                 'factor_currency' => $this->data['channelSettingsFactorCurrency']
             ];
 
-            $allChannelVideos = Video::where('channel_id', $channelId)->get();
+            $allChannelVideos = Video::where('channel_db_id', $channelId)->where('user_id', $userId)->get();
 
             foreach ($allChannelVideos as $dbVideo)
             {
@@ -66,7 +76,7 @@ class UpdateChannelForm extends Form
             }
         }
 
-        $channel = Channel::find($channelId);
+        $channel = Channel::where('db_id', $channelId)->where('user_id', $userId)->first();
         $channel->updateChannel($channelData);
 
         $this->setMessage('Channel "' . $channel->name . '" successfully updated!');

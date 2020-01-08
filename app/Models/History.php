@@ -7,12 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 class History extends Model
 {
     protected $table = 'history';
-    protected $primaryKey = 'video_id';
+    protected $primaryKey = 'db_id';
 
     public $incrementing = false;
 
     protected $fillable = [
         'video_id',
+        'video_db_id',
+        'user_id',
         'tresholds_reached',
         'january',
         'february',
@@ -55,6 +57,21 @@ class History extends Model
 
     public function video()
     {
-        return $this->belongsTo('App\Models\Video');
+        return $this->belongsTo('App\Models\Video', 'db_id', 'video_db_id');
     }
+
+    public function user()
+    {
+        return $this->belongsTo('App\Models\User', 'id');
+    }
+
+    // public static function boot()
+    // {
+    //     parent::boot();
+    //
+    //     static::deleting(function($history)
+    //     {
+    //          $history->video()->delete();
+    //     });
+    // }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Core\Forms;
 
+use Sentinel;
 use App\Core\Forms\Form;
 use App\Models\Video;
 
@@ -28,6 +29,15 @@ class UpdateVideoForm extends Form
     {
         $videoId = $this->data['videoSettingsVideoId'];
 
+        if(Sentinel::check())
+        {
+            $userId = Sentinel::getUser()->id;
+        }
+        else
+        {
+            $userId = null;
+        }
+
         $videoData = [
             'name' => $this->data['videoSettingsTitle'],
             'earning_factor' => $this->data['videoSettingsEarningFactor'],
@@ -36,7 +46,7 @@ class UpdateVideoForm extends Form
             'note' => $this->data['videoSettingsNote']
         ];
 
-        $video = Video::find($videoId);
+        $video = Video::where('id', $videoId)->where('user_id', $userId)->first();
         $video->updateVideo($videoData);
 
         $this->setMessage('Video "' . $video->name . '" successfully updated!');

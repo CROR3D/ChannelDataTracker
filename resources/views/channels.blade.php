@@ -74,7 +74,7 @@
                                     <div class="element-group">
                                         <input class="video-id p-2 mr-3" name="video_id" type="text" autocomplete="off">
                                         <button class="btn-custom btn-custom-secondary add-video" name="add_video_popup" value="{{ $channel['id'] }}">Add <span>Video</span></button>
-                                        <button class="btn-custom btn-custom-secondary edit-channel" name="edit-channel" value="{{ $channel['id'] }}" data-channel="{{ json_encode($channel) }}">Channel <span>Settings</span></button>
+                                        <button class="btn-custom btn-custom-secondary edit-channel" name="edit-channel" value="{{ $channel['db_id'] }}" data-channel="{{ json_encode($channel) }}">Channel <span>Settings</span></button>
                                     </div>
                                 </div>
 
